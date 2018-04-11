@@ -1,5 +1,5 @@
 ﻿//TODO: move define into precompiler option
-#define ENABLE_COLOR //<-uncomment to enable color hex codes on output in the debug logs
+//#define ENABLE_COLOR //<-uncomment to enable color hex codes on output in the debug logs
 #define DISABLE_EDITOR_DEBUG //<-uncomment to test non-editor debugging in the editor
 #define USE_MODLOG
 using UnityEngine;
