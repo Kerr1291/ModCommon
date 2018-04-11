@@ -1,20 +1,48 @@
 ﻿//TODO: move define into precompiler option
 #define ENABLE_COLOR //<-uncomment to enable color hex codes on output in the debug logs
 #define DISABLE_EDITOR_DEBUG //<-uncomment to test non-editor debugging in the editor
+#define USE_MODLOG
 using UnityEngine;
 using UnityEngine.UI;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System;
 
+#if USE_MODLOG
 //change to anything with an Instance.Log function
-using DevLog = ModCommon.ModCommon;
+using DevLoggingOutput = ModCommon.ModCommon;
+#endif
 
 //disable the unreachable code detected warning for this file
 #pragma warning disable 0162
 
 namespace ModCommon
 {
+#if USE_MODLOG
+    public class DevLog
+    {
+        static public DevLog Logger { get {
+                DevLogObject d = DevLogObject.Instance;
+                return DevLogObject.Logger;
+            } }
+
+
+        public class DevLogObject : GameSingleton<DevLogObject>
+        {
+            static public DevLog Logger;
+            public static new DevLogObject Instance {
+                get {
+                    DevLogObject logObject = GameSingleton<DevLogObject>.Instance;
+                    if( Logger == null )
+                    {
+                        Logger = new DevLog();
+                        Logger.Setup();
+                    }
+                    return logObject;
+                }
+            }
+        }
+#else
     public class DevLog : GameSingleton<DevLog>
     {
         public static new DevLog Instance {
@@ -25,6 +53,7 @@ namespace ModCommon
                 return log;
             }
         }
+#endif
 
         struct LogString
         {
@@ -64,7 +93,7 @@ namespace ModCommon
         {
             if( logRoot == null )
             {
-                logRoot = gameObject;
+                logRoot = DevLogObject.Instance.gameObject;
                 //logRoot = new GameObject("DebugLogRoot");
                 Canvas canvas = logRoot.AddComponent<Canvas>();
                 canvas.renderMode = RenderMode.ScreenSpaceOverlay;
@@ -141,13 +170,13 @@ namespace ModCommon
             while( total_size > max_size )
             {
                 LogString lString = content.Dequeue();
-                Destroy( lString.obj.gameObject );
+                GameObject.Destroy( lString.obj.gameObject );
                 total_size -= line_size;
             }
             while(content.Count > maxLines)
             {
                 LogString lString = content.Dequeue();
-                Destroy(lString.obj.gameObject);
+                GameObject.Destroy(lString.obj.gameObject);
             }
 
             UpdatePositions();
@@ -197,7 +226,7 @@ namespace ModCommon
     /// </summary>
     public partial class Dev
     {
-        #region Internal
+#region Internal
 
         static string GetFunctionHeader( int frame = 0 )
         {
@@ -279,7 +308,7 @@ namespace ModCommon
 #if UNITY_EDITOR && !DISABLE_EDITOR_DEBUG
             UnityEngine.Debug.Log( " :::: " + Dev.FunctionHeader() );
 #else
-            DevLog.Instance.Log( " :::: " + Dev.FunctionHeader() );
+            DevLoggingOutput.Instance.Log( " :::: " + Dev.FunctionHeader() );
 #endif
         }
 
@@ -288,7 +317,7 @@ namespace ModCommon
 #if UNITY_EDITOR && !DISABLE_EDITOR_DEBUG
             UnityEngine.Debug.LogError( Dev.FunctionHeader() + Dev.Colorize( text, ColorToHex( Color.red ) ) );
 #else
-            DevLog.Instance.Log( Dev.FunctionHeader() + Dev.Colorize( text, ColorToHex(Color.red) ) );
+            DevLoggingOutput.Instance.Log( Dev.FunctionHeader() + Dev.Colorize( text, ColorToHex(Color.red) ) );
 #endif
         }
 
@@ -297,7 +326,7 @@ namespace ModCommon
 #if UNITY_EDITOR && !DISABLE_EDITOR_DEBUG
             UnityEngine.Debug.LogWarning( Dev.FunctionHeader() + Dev.Colorize( text, ColorToHex(Color.yellow) ) );
 #else
-            DevLog.Instance.Log( Dev.FunctionHeader() + Dev.Colorize( text, ColorToHex(Color.yellow) ) );
+            DevLoggingOutput.Instance.Log( Dev.FunctionHeader() + Dev.Colorize( text, ColorToHex(Color.yellow) ) );
 #endif
         }
 
@@ -306,7 +335,7 @@ namespace ModCommon
 #if UNITY_EDITOR && !DISABLE_EDITOR_DEBUG
             UnityEngine.Debug.Log( Dev.FunctionHeader() + Dev.Colorize( text, _log_color ) );
 #else
-            DevLog.Instance.Log( Dev.FunctionHeader() + Dev.Colorize( text, _log_color ) );
+            DevLoggingOutput.Instance.Log( Dev.FunctionHeader() + Dev.Colorize( text, _log_color ) );
 #endif
         }
 
@@ -315,7 +344,7 @@ namespace ModCommon
 #if UNITY_EDITOR && !DISABLE_EDITOR_DEBUG
             UnityEngine.Debug.Log( Dev.FunctionHeader() + Dev.Colorize( text, Dev.ColorStr( r, g, b ) ) );
 #else
-            DevLog.Instance.Log( ( Dev.FunctionHeader() + Dev.Colorize( text, Dev.ColorStr( r, g, b ) ) ) );
+            DevLoggingOutput.Instance.Log( ( Dev.FunctionHeader() + Dev.Colorize( text, Dev.ColorStr( r, g, b ) ) ) );
 #endif
         }
         public static void Log( string text, float r, float g, float b )
@@ -323,7 +352,7 @@ namespace ModCommon
 #if UNITY_EDITOR && !DISABLE_EDITOR_DEBUG
             UnityEngine.Debug.Log( Dev.FunctionHeader() + Dev.Colorize( text, Dev.ColorStr( r, g, b ) ) );
 #else
-            DevLog.Instance.Log( Dev.FunctionHeader() + Dev.Colorize( text, Dev.ColorStr( r, g, b ) ) );
+            DevLoggingOutput.Instance.Log( Dev.FunctionHeader() + Dev.Colorize( text, Dev.ColorStr( r, g, b ) ) );
 #endif
         }
 
@@ -332,7 +361,7 @@ namespace ModCommon
 #if UNITY_EDITOR && !DISABLE_EDITOR_DEBUG
             UnityEngine.Debug.Log( Dev.FunctionHeader() + Dev.Colorize( text, Dev.ColorToHex( color ) ) );
 #else
-            DevLog.Instance.Log( Dev.FunctionHeader() + Dev.Colorize( text, Dev.ColorToHex( color ) ) );
+            DevLoggingOutput.Instance.Log( Dev.FunctionHeader() + Dev.Colorize( text, Dev.ColorToHex( color ) ) );
 #endif
         }
 
@@ -351,7 +380,7 @@ namespace ModCommon
 #else
             string var_name = var == null ? "Null" : var.GetType().Name;
             string var_value = Convert.ToString( var );
-            DevLog.Instance.Log( Dev.FunctionHeader() + Dev.Colorize( var_name, _param_color ) + " = " + Dev.Colorize( var_value, _log_color ) );
+            DevLoggingOutput.Instance.Log( Dev.FunctionHeader() + Dev.Colorize( var_name, _param_color ) + " = " + Dev.Colorize( var_value, _log_color ) );
 #endif
         }
 
@@ -367,7 +396,7 @@ namespace ModCommon
 #if UNITY_EDITOR && !DISABLE_EDITOR_DEBUG
             UnityEngine.Debug.Log( Dev.FunctionHeader() + Dev.Colorize( var_name, _param_color ) + " = " + Dev.Colorize( var_value, _log_color ) );
 #else
-            DevLog.Instance.Log( Dev.FunctionHeader() + Dev.Colorize( var_name, _param_color ) + " = " + Dev.Colorize( var_value, _log_color ) );
+            DevLoggingOutput.Instance.Log( Dev.FunctionHeader() + Dev.Colorize( var_name, _param_color ) + " = " + Dev.Colorize( var_value, _log_color ) );
 #endif
         }
 
@@ -390,7 +419,7 @@ namespace ModCommon
             for( int i = 0; i < size; ++i )
             {
                 string vname = label + "[" + Dev.Colorize( Convert.ToString( i ), _log_color ) +"]";
-                DevLog.Instance.Log( Dev.FunctionHeader() + Dev.Colorize( vname, _param_color ) + " = " + Dev.Colorize( Convert.ToString( array[ i ] ), _log_color ) );
+                DevLoggingOutput.Instance.Log( Dev.FunctionHeader() + Dev.Colorize( vname, _param_color ) + " = " + Dev.Colorize( Convert.ToString( array[ i ] ), _log_color ) );
             }
 #endif
         }
@@ -412,12 +441,12 @@ namespace ModCommon
 
             string var_name = label;
             string var_value = Convert.ToString( var );
-            DevLog.Instance.Log( Dev.FunctionHeader() + Dev.Colorize( var_name, _param_color ) + " = " + Dev.Colorize( var_value, _log_color ) );            
+            DevLoggingOutput.Instance.Log( Dev.FunctionHeader() + Dev.Colorize( var_name, _param_color ) + " = " + Dev.Colorize( var_value, _log_color ) );            
 #endif
         }
 #endregion
 
-        #region Helpers
+#region Helpers
 
         public static string ColorString( string input, Color color )
         {
@@ -461,7 +490,7 @@ namespace ModCommon
             foreach( Transform child in parent.GetComponentsInChildren<Transform>() )
             {
                 if( print_nones && child.gameObject.hideFlags == HideFlags.None )
-                    DevLog.Instance.Log( Dev.Colorize( child.gameObject.name, Dev.ColorToHex( Color.white ) ) + ".hideflags = " + Dev.Colorize( Convert.ToString( child.gameObject.hideFlags ), _param_color ) );
+                    DevLoggingOutput.Instance.Log( Dev.Colorize( child.gameObject.name, Dev.ColorToHex( Color.white ) ) + ".hideflags = " + Dev.Colorize( Convert.ToString( child.gameObject.hideFlags ), _param_color ) );
                 else if( child.gameObject.hideFlags != HideFlags.None )
                 {
                     if( !showed_where )
@@ -469,7 +498,7 @@ namespace ModCommon
                         Dev.Where();
                         showed_where = true;
                     }
-                    DevLog.Instance.Log( Dev.Colorize( child.gameObject.name, Dev.ColorToHex( Color.white ) ) + ".hideflags = " + Dev.Colorize( Convert.ToString( child.gameObject.hideFlags ), _param_color ) );
+                    DevLoggingOutput.Instance.Log( Dev.Colorize( child.gameObject.name, Dev.ColorToHex( Color.white ) ) + ".hideflags = " + Dev.Colorize( Convert.ToString( child.gameObject.hideFlags ), _param_color ) );
                 }
             }
 #endif
@@ -518,7 +547,7 @@ namespace ModCommon
             return obj == null ? "Null" : obj.GetType().Name;
         }
 #endif
-        #endregion
+#endregion
     }
 
 }

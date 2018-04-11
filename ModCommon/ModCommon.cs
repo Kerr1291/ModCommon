@@ -31,12 +31,14 @@ namespace ModCommon
 
             Log("Mod Common initializing!");
 
-            SetupDefaulSettings();
+            //SetupDefaulSettings();
 
             UnRegisterCallbacks();
             RegisterCallbacks();
 
-            DevLog.Instance.Hide();
+            DevLog.Logger.Hide();
+
+            Log( "Mod Common is done initializing!" );
         }
 
         void SetupDefaulSettings()
