@@ -5,7 +5,7 @@ using UnityEngine;
 
 namespace ModCommon
 {
-    public partial class ModCommon
+    public static class Tools
     {
         public static void EnterSandbox()
         {
@@ -167,26 +167,7 @@ namespace ModCommon
                     GameObject.Destroy( scene.FindGameObject( s ) );
                 }
             }
-        }
-
-        void RegisterCallbacks()
-        {
-            UnityEngine.SceneManagement.SceneManager.activeSceneChanged -= CheckAndDisableLogicInMenu;
-            UnityEngine.SceneManagement.SceneManager.activeSceneChanged += CheckAndDisableLogicInMenu;
-        }
-
-        void UnRegisterCallbacks()
-        {
-            UnityEngine.SceneManagement.SceneManager.activeSceneChanged -= CheckAndDisableLogicInMenu;
-        }
-
-        void CheckAndDisableLogicInMenu( Scene from, Scene to )
-        {
-            if( to.name == "Menu_Title" )
-            {
-                SetNoclip(false);
-            }
-        }        
+        }   
 
         public static void SetNoclip( bool state )
         {

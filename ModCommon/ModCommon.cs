@@ -1,6 +1,7 @@
 ﻿using System.IO;
 using Modding;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 namespace ModCommon
 {
@@ -93,6 +94,25 @@ namespace ModCommon
         public override int LoadPriority()
         {
             return 0;
+        }
+
+        void RegisterCallbacks()
+        {
+            UnityEngine.SceneManagement.SceneManager.activeSceneChanged -= CheckAndDisableLogicInMenu;
+            UnityEngine.SceneManagement.SceneManager.activeSceneChanged += CheckAndDisableLogicInMenu;
+        }
+
+        void UnRegisterCallbacks()
+        {
+            UnityEngine.SceneManagement.SceneManager.activeSceneChanged -= CheckAndDisableLogicInMenu;
+        }
+
+        void CheckAndDisableLogicInMenu( Scene from, Scene to )
+        {
+            if( to.name == "Menu_Title" )
+            {
+                Tools.SetNoclip( false );
+            }
         }
     }
 }
