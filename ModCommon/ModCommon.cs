@@ -31,7 +31,7 @@ namespace ModCommon
 
             Log("Mod Common initializing!");
 
-            //SetupDefaulSettings();
+            SetupDefaulSettings();
 
             UnRegisterCallbacks();
             RegisterCallbacks();
