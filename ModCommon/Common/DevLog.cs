@@ -1,17 +1,14 @@
 ﻿//TODO: move define into precompiler option
-#define USE_HK_MODLOG
-//#define ENABLE_COLOR //<-uncomment to enable color hex codes on output in the debug logs
+#define ENABLE_COLOR //<-uncomment to enable color hex codes on output in the debug logs
+#define DISABLE_EDITOR_DEBUG //<-uncomment to test non-editor debugging in the editor
 using UnityEngine;
 using UnityEngine.UI;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System;
 
-#if USE_HK_MODLOG
-using Mod = ModCommon.ModCommon;
-#endif
-
-
+//change to anything with an Instance.Log function
+using DevLog = ModCommon.ModCommon;
 
 //disable the unreachable code detected warning for this file
 #pragma warning disable 0162
@@ -45,24 +42,58 @@ namespace ModCommon
 
         [SerializeField]
         GameObject logTextPrefab = null;
+        
+        Vector2 logWindowSize
+        {
+            get
+            {
+                CanvasRenderer canvas = logWindow.AddComponent<CanvasRenderer>();
+                return canvas.gameObject.GetOrAddComponent<RectTransform>().rect.size;
+            }
+            set
+            {
+                CanvasRenderer canvas = logWindow.AddComponent<CanvasRenderer>();
+                Rect currentRect = canvas.gameObject.GetOrAddComponent<RectTransform>().rect;
+                canvas.gameObject.GetOrAddComponent<RectTransform>().sizeDelta = value;
+            }
+        }
+
+        public int maxLines = 10;
 
         public void SetupPrefabs()
         {
-            if(logTextPrefab == null)
-            {
-                logTextPrefab = new GameObject( "DebugLogTextElement" );
-                Text text = logTextPrefab.AddComponent<Text>();
-                text.color = Color.red;
-                logTextPrefab.SetActive( false );
-            }
             if( logRoot == null )
             {
-                logRoot = new GameObject( "DebugLogRoot" );
+                logRoot = gameObject;
+                //logRoot = new GameObject("DebugLogRoot");
                 Canvas canvas = logRoot.AddComponent<Canvas>();
                 canvas.renderMode = RenderMode.ScreenSpaceOverlay;
                 canvas.gameObject.GetOrAddComponent<RectTransform>().sizeDelta = new Vector2( 1920f * .5f, 1080f * 20f );
                 CanvasScaler canvasScaler = logRoot.AddComponent<CanvasScaler>();
                 canvasScaler.referenceResolution = new Vector2( 1920f, 1080f );
+            }
+            if(logTextPrefab == null)
+            {
+                logTextPrefab = new GameObject("DebugLogTextElement");
+                logTextPrefab.transform.SetParent(logRoot.transform);
+                Text text = logTextPrefab.AddComponent<Text>();
+                text.color = Color.red;
+                text.font = Font.CreateDynamicFontFromOSFont("Arial", 14);
+                text.fontSize = 12;
+                text.horizontalOverflow = HorizontalWrapMode.Overflow;
+                text.verticalOverflow = VerticalWrapMode.Overflow;
+                text.alignment = TextAnchor.MiddleLeft;
+                ContentSizeFitter csf = logTextPrefab.AddComponent<ContentSizeFitter>();
+                csf.horizontalFit = ContentSizeFitter.FitMode.PreferredSize;
+                csf.verticalFit = ContentSizeFitter.FitMode.PreferredSize;
+
+                logTextPrefab.gameObject.GetOrAddComponent<RectTransform>().anchorMax = new Vector2(0f, 1f);
+                logTextPrefab.gameObject.GetOrAddComponent<RectTransform>().anchorMin = new Vector2(0f, 1f);
+                //logTextPrefab.gameObject.GetOrAddComponent<RectTransform>().sizeDelta = Vector2.zero;
+                logTextPrefab.gameObject.GetOrAddComponent<RectTransform>().anchoredPosition = new Vector2(0f,0f);
+                logTextPrefab.gameObject.GetOrAddComponent<RectTransform>().pivot = new Vector2(0f, 1f);
+
+                logTextPrefab.SetActive(false);
             }
             if( logWindow == null )
             {
@@ -113,6 +144,24 @@ namespace ModCommon
                 Destroy( lString.obj.gameObject );
                 total_size -= line_size;
             }
+            while(content.Count > maxLines)
+            {
+                LogString lString = content.Dequeue();
+                Destroy(lString.obj.gameObject);
+            }
+
+            UpdatePositions();
+        }
+
+        void UpdatePositions()
+        {
+            float size = LineSize();
+            int index = 0;
+            foreach(LogString lstring in content)
+            {
+                lstring.obj.GetComponent<RectTransform>().anchoredPosition = new Vector2(0f, -size * index);
+                ++index;
+            }
         }
 
         public void Log( string s )
@@ -154,7 +203,6 @@ namespace ModCommon
         {
             //get stacktrace info
             StackTrace stackTrace = new StackTrace();
-            //string calling_class_name = stackTrace.GetFrame( BaseFunctionHeader + frame + 2 )?.GetMethod()?.ReflectedType.Name;
             string class_name = stackTrace.GetFrame( BaseFunctionHeader + frame ).GetMethod().ReflectedType.Name;
 
             //build parameters string
@@ -176,9 +224,7 @@ namespace ModCommon
             }
 
             //build function header
-            //string calling_function_name = stackTrace.GetFrame( BaseFunctionHeader + frame + 2 )?.GetMethod()?.Name + "(" + parameters_name + ")";
             string function_name = stackTrace.GetFrame( BaseFunctionHeader + frame ).GetMethod().Name + "(" + parameters_name + ")";
-            //return calling_class_name +"."+ calling_function_name +" Invoked "+ class_name + "." + function_name;
             return class_name + "." + function_name;
         }
 
@@ -230,19 +276,17 @@ namespace ModCommon
 
         public static void Where()
         {
-#if UNITY_EDITOR
+#if UNITY_EDITOR && !DISABLE_EDITOR_DEBUG
             UnityEngine.Debug.Log( " :::: " + Dev.FunctionHeader() );
-#elif USE_HK_MODLOG
-            Mod.Instance.Log( " :::: " + Dev.FunctionHeader() );
+#else
+            DevLog.Instance.Log( " :::: " + Dev.FunctionHeader() );
 #endif
         }
 
         public static void LogError( string text )
         {
-#if UNITY_EDITOR
+#if UNITY_EDITOR && !DISABLE_EDITOR_DEBUG
             UnityEngine.Debug.LogError( Dev.FunctionHeader() + Dev.Colorize( text, ColorToHex( Color.red ) ) );
-#elif USE_HK_MODLOG
-            Mod.Instance.LogError( Dev.FunctionHeader() + Dev.Colorize( text, ColorToHex( Color.red ) ) );
 #else
             DevLog.Instance.Log( Dev.FunctionHeader() + Dev.Colorize( text, ColorToHex(Color.red) ) );
 #endif
@@ -250,9 +294,8 @@ namespace ModCommon
 
         public static void LogWarning( string text )
         {
-#if UNITY_EDITOR
+#if UNITY_EDITOR && !DISABLE_EDITOR_DEBUG
             UnityEngine.Debug.LogWarning( Dev.FunctionHeader() + Dev.Colorize( text, ColorToHex(Color.yellow) ) );
-#elif USE_HK_MODLOG
 #else
             DevLog.Instance.Log( Dev.FunctionHeader() + Dev.Colorize( text, ColorToHex(Color.yellow) ) );
 #endif
@@ -260,10 +303,8 @@ namespace ModCommon
 
         public static void Log( string text )
         {
-#if UNITY_EDITOR
+#if UNITY_EDITOR && !DISABLE_EDITOR_DEBUG
             UnityEngine.Debug.Log( Dev.FunctionHeader() + Dev.Colorize( text, _log_color ) );
-#elif USE_HK_MODLOG
-            Mod.Instance.Log( Dev.FunctionHeader() + Dev.Colorize( text, _log_color ) );
 #else
             DevLog.Instance.Log( Dev.FunctionHeader() + Dev.Colorize( text, _log_color ) );
 #endif
@@ -271,20 +312,16 @@ namespace ModCommon
 
         public static void Log( string text, int r, int g, int b )
         {
-#if UNITY_EDITOR
+#if UNITY_EDITOR && !DISABLE_EDITOR_DEBUG
             UnityEngine.Debug.Log( Dev.FunctionHeader() + Dev.Colorize( text, Dev.ColorStr( r, g, b ) ) );
-#elif USE_HK_MODLOG
-            Mod.Instance.Log( Dev.FunctionHeader() + Dev.Colorize( text, Dev.ColorStr( r, g, b ) ) );
 #else
             DevLog.Instance.Log( ( Dev.FunctionHeader() + Dev.Colorize( text, Dev.ColorStr( r, g, b ) ) ) );
 #endif
         }
         public static void Log( string text, float r, float g, float b )
         {
-#if UNITY_EDITOR
+#if UNITY_EDITOR && !DISABLE_EDITOR_DEBUG
             UnityEngine.Debug.Log( Dev.FunctionHeader() + Dev.Colorize( text, Dev.ColorStr( r, g, b ) ) );
-#elif USE_HK_MODLOG
-            Mod.Instance.Log( Dev.FunctionHeader() + Dev.Colorize( text, Dev.ColorStr( r, g, b ) ) );
 #else
             DevLog.Instance.Log( Dev.FunctionHeader() + Dev.Colorize( text, Dev.ColorStr( r, g, b ) ) );
 #endif
@@ -292,10 +329,8 @@ namespace ModCommon
 
         public static void Log( string text, Color color )
         {
-#if UNITY_EDITOR
+#if UNITY_EDITOR && !DISABLE_EDITOR_DEBUG
             UnityEngine.Debug.Log( Dev.FunctionHeader() + Dev.Colorize( text, Dev.ColorToHex( color ) ) );
-#elif USE_HK_MODLOG
-            Mod.Instance.Log( Dev.FunctionHeader() + Dev.Colorize( text, Dev.ColorToHex( color ) ) );
 #else
             DevLog.Instance.Log( Dev.FunctionHeader() + Dev.Colorize( text, Dev.ColorToHex( color ) ) );
 #endif
@@ -309,17 +344,14 @@ namespace ModCommon
         /// <param name="var"></param>
         public static void LogVar<T>( T var )
         {
-#if UNITY_EDITOR
+#if UNITY_EDITOR && !DISABLE_EDITOR_DEBUG
             string var_name = GetVarName(var);// var.GetType().
             string var_value = Convert.ToString( var );
             UnityEngine.Debug.Log( Dev.FunctionHeader() + Dev.Colorize( var_name, _param_color ) + " = " + Dev.Colorize( var_value, _log_color ) );
-#elif USE_HK_MODLOG
-            string var_name = GetVarName(var);// var.GetType().
-            string var_value = Convert.ToString( var );
-            Mod.Instance.Log( Dev.FunctionHeader() + Dev.Colorize( var_name, _param_color ) + " = " + Dev.Colorize( var_value, _log_color ) );
 #else
-        //in the case of a release build, this will be called instead
-        LogVar( "--DEBUG VAR (Change this call to see a meaningful label)--", var );
+            string var_name = var == null ? "Null" : var.GetType().Name;
+            string var_value = Convert.ToString( var );
+            DevLog.Instance.Log( Dev.FunctionHeader() + Dev.Colorize( var_name, _param_color ) + " = " + Dev.Colorize( var_value, _log_color ) );
 #endif
         }
 
@@ -332,10 +364,8 @@ namespace ModCommon
         {
             string var_name = label;
             string var_value = Convert.ToString( var );
-#if UNITY_EDITOR
+#if UNITY_EDITOR && !DISABLE_EDITOR_DEBUG
             UnityEngine.Debug.Log( Dev.FunctionHeader() + Dev.Colorize( var_name, _param_color ) + " = " + Dev.Colorize( var_value, _log_color ) );
-#elif USE_HK_MODLOG
-            Mod.Instance.Log( Dev.FunctionHeader() + Dev.Colorize( var_name, _param_color ) + " = " + Dev.Colorize( var_value, _log_color ) );
 #else
             DevLog.Instance.Log( Dev.FunctionHeader() + Dev.Colorize( var_name, _param_color ) + " = " + Dev.Colorize( var_value, _log_color ) );
 #endif
@@ -348,46 +378,46 @@ namespace ModCommon
         /// <param name="array"></param>
         public static void LogVarArray<T>( string label, IList<T> array )
         {
-#if UNITY_EDITOR
+#if UNITY_EDITOR && !DISABLE_EDITOR_DEBUG
             int size = array.Count;
             for( int i = 0; i < size; ++i )
             {
                 string vname = label + "[" + Dev.Colorize( Convert.ToString( i ), _log_color ) +"]";
                 UnityEngine.Debug.Log( Dev.FunctionHeader() + Dev.Colorize( vname, _param_color ) + " = " + Dev.Colorize( Convert.ToString( array[ i ] ), _log_color ) );
             }
-#elif USE_HK_MODLOG
+#else
             int size = array.Count;
             for( int i = 0; i < size; ++i )
             {
                 string vname = label + "[" + Dev.Colorize( Convert.ToString( i ), _log_color ) +"]";
-                Mod.Instance.Log( Dev.FunctionHeader() + Dev.Colorize( vname, _param_color ) + " = " + Dev.Colorize( Convert.ToString( array[ i ] ), _log_color ) );
+                DevLog.Instance.Log( Dev.FunctionHeader() + Dev.Colorize( vname, _param_color ) + " = " + Dev.Colorize( Convert.ToString( array[ i ] ), _log_color ) );
             }
 #endif
         }
 
         public static void LogVarOnlyThis<T>( string label, T var, string input_name, string this_name )
         {
-#if UNITY_EDITOR
+#if UNITY_EDITOR && !DISABLE_EDITOR_DEBUG
             if( this_name != input_name )
                 return;
 
             string var_name = label;
             string var_value = Convert.ToString( var );
             UnityEngine.Debug.Log( Dev.FunctionHeader() + Dev.Colorize( var_name, _param_color ) + " = " + Dev.Colorize( var_value, _log_color ) );
-            
-#elif USE_HK_MODLOG
+
+#else
 
             if( this_name != input_name )
                 return;
 
             string var_name = label;
             string var_value = Convert.ToString( var );
-            Mod.Instance.Log( Dev.FunctionHeader() + Dev.Colorize( var_name, _param_color ) + " = " + Dev.Colorize( var_value, _log_color ) );            
+            DevLog.Instance.Log( Dev.FunctionHeader() + Dev.Colorize( var_name, _param_color ) + " = " + Dev.Colorize( var_value, _log_color ) );            
 #endif
         }
 #endregion
 
-#region Helpers
+        #region Helpers
 
         public static string ColorString( string input, Color color )
         {
@@ -396,7 +426,7 @@ namespace ModCommon
 
         public static void PrintHideFlagsInChildren( GameObject parent, bool print_nones = false )
         {
-#if UNITY_EDITOR
+#if UNITY_EDITOR && !DISABLE_EDITOR_DEBUG
             bool showed_where = false;
 
             if( print_nones )
@@ -419,7 +449,7 @@ namespace ModCommon
                     UnityEngine.Debug.Log( Dev.Colorize( child.gameObject.name, Dev.ColorToHex( Color.white ) ) + ".hideflags = " + Dev.Colorize( Convert.ToString( child.gameObject.hideFlags ), _param_color ) );
                 }
             }
-#elif USE_HK_MODLOG
+#else
             bool showed_where = false;
 
             if( print_nones )
@@ -431,7 +461,7 @@ namespace ModCommon
             foreach( Transform child in parent.GetComponentsInChildren<Transform>() )
             {
                 if( print_nones && child.gameObject.hideFlags == HideFlags.None )
-                    Mod.Instance.Log( Dev.Colorize( child.gameObject.name, Dev.ColorToHex( Color.white ) ) + ".hideflags = " + Dev.Colorize( Convert.ToString( child.gameObject.hideFlags ), _param_color ) );
+                    DevLog.Instance.Log( Dev.Colorize( child.gameObject.name, Dev.ColorToHex( Color.white ) ) + ".hideflags = " + Dev.Colorize( Convert.ToString( child.gameObject.hideFlags ), _param_color ) );
                 else if( child.gameObject.hideFlags != HideFlags.None )
                 {
                     if( !showed_where )
@@ -439,7 +469,7 @@ namespace ModCommon
                         Dev.Where();
                         showed_where = true;
                     }
-                    Mod.Instance.Log( Dev.Colorize( child.gameObject.name, Dev.ColorToHex( Color.white ) ) + ".hideflags = " + Dev.Colorize( Convert.ToString( child.gameObject.hideFlags ), _param_color ) );
+                    DevLog.Instance.Log( Dev.Colorize( child.gameObject.name, Dev.ColorToHex( Color.white ) ) + ".hideflags = " + Dev.Colorize( Convert.ToString( child.gameObject.hideFlags ), _param_color ) );
                 }
             }
 #endif
@@ -453,7 +483,7 @@ namespace ModCommon
             }
         }
 
-#if UNITY_EDITOR
+#if UNITY_EDITOR && !DISABLE_EDITOR_DEBUG
         class GetVarNameHelper
         {
             public static Dictionary<string, string> _cached_name = new Dictionary<string, string>();
@@ -477,7 +507,7 @@ namespace ModCommon
                 return varName;
             }
         }
-#elif USE_HK_MODLOG
+#else
         class GetVarNameHelper
         {
             public static Dictionary<string, string> _cached_name = new Dictionary<string, string>();
@@ -485,36 +515,10 @@ namespace ModCommon
 
         static string GetVarName( object obj )
         {
-            //TODO: see if i can encode a path to the local assembly dump
-            StackFrame stackFrame = new StackTrace(true).GetFrame(2);
-            string fileName = stackFrame.GetFileName();
-            //fileName = System.IO.Path.GetFileName( fileName );
-            int lineNumber = stackFrame.GetFileLineNumber();
-            string uniqueId = fileName + lineNumber;
-            if( GetVarNameHelper._cached_name.ContainsKey( uniqueId ) )
-            {
-                return GetVarNameHelper._cached_name[ uniqueId ];
-            }
-            else
-            {
-                string varName = "DevLog::GetVarName() Failed. Var: Type ="+ obj.GetType().Name +" at "+lineNumber+" :: Value ";
-                try
-                {
-                    System.IO.StreamReader file = new System.IO.StreamReader(fileName);
-                    for( int i = 0; i < lineNumber - 1; i++ )
-                        file.ReadLine();
-                    varName = file.ReadLine().Split(new char[] { '(', ')' })[1];
-                }
-                catch(Exception)
-                {
-                    ///...eat the exception, we don't care if it failed to find the file or something went wrong
-                }
-                GetVarNameHelper._cached_name.Add( uniqueId, varName );
-                return varName;
-            }
+            return obj == null ? "Null" : obj.GetType().Name;
         }
 #endif
-#endregion
+        #endregion
     }
 
 }

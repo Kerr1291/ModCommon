@@ -224,7 +224,7 @@ namespace ModCommon
                 yield return new WaitForEndOfFrame();
                 forceSingleEntry = false;
             }
-            yield break;
+            //yield break;
         }
 
         private void OnEnable()
@@ -298,13 +298,19 @@ namespace ModCommon
 
                 Color lineColor = GetLineColor(v);
 
+                //TODO: wrap these line calls in #if checks for unity versions...
                 LineRenderer line = newLine.AddComponent<LineRenderer>();
                 Vector3[] points = GetPointsHelper(v).Select(x=>{ return new Vector3(x.x,x.y,zDepth); } ).ToArray();
-                line.SetVertexCount( points.Length );
+                line.positionCount = points.Length;
+                //line.SetVertexCount( points.Length );
                 line.SetPositions( points );
-                line.SetWidth( lineWidth, lineWidth );
+                //line.SetWidth( lineWidth, lineWidth );
+                line.startWidth = lineWidth;
+                line.endWidth = lineWidth;
                 line.sharedMaterial = GetLineMaterial( v );
-                line.SetColors( lineColor, lineColor );
+                //line.SetColors( lineColor, lineColor );
+                line.startColor = lineColor;
+                line.endColor = lineColor;
                 lines.Add( v, line );
 
                 GameObject lineLabel = new GameObject( name + " LABEL" );
@@ -380,7 +386,9 @@ namespace ModCommon
                 pair.Value.sharedMaterial = GetLineMaterial( pair.Key );
 
                 Color lineColor = GetLineColor(pair.Key);
-                pair.Value.SetColors( lineColor, lineColor );
+                //pair.Value.SetColors( lineColor, lineColor );
+                pair.Value.startColor = lineColor;
+                pair.Value.endColor = lineColor;
 
                 if( pair.Value.GetComponent<Renderer>() )
                     pair.Value.GetComponent<Renderer>().sharedMaterial.color = lineColor;

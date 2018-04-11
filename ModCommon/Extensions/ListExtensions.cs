@@ -73,16 +73,18 @@ namespace ModCommon
                 lineObj.transform.SetParent( parent );
 
             LineRenderer lr = lineObj.AddComponent<LineRenderer>();
-            lr.SetVertexCount( points.Count );
+            lr.positionCount = points.Count;
             lr.SetPositions( points.ToArray() );
-            lr.SetWidth( width, .001f );
+            lr.startWidth = width;
+            lr.endWidth = width;
 
             if( lr.GetComponent<Renderer>() )
                 lr.GetComponent<Renderer>().material = new Material( Shader.Find( "Diffuse" ) );
             if( lr.GetComponent<Renderer>() )
                 lr.GetComponent<Renderer>().material.color = c;
 
-            lr.SetColors( c, c );
+            lr.startColor = c;
+            lr.endColor = c;
 
             return lineObj;
         }

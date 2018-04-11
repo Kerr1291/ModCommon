@@ -7,12 +7,12 @@ namespace ModCommon
 {
     public partial class ModCommon
     {
-        public void EnterSandbox()
+        public static void EnterSandbox()
         {
             GameManager.instance.StartCoroutine( DoEnterSandbox() );
         }
 
-        public IEnumerator DoEnterSandbox()
+        public static IEnumerator DoEnterSandbox()
         {
             //find a source transition
             string currentSceneTransition = GameObject.FindObjectOfType<TransitionPoint>().gameObject.name;
@@ -101,7 +101,7 @@ namespace ModCommon
         }
 
         //copied and modified from "TransitionPoint.cs"
-        public GlobalEnums.GatePosition GetGatePosition( string name )
+        public static GlobalEnums.GatePosition GetGatePosition( string name )
         {
             if( name.Contains( "top" ) )
             {
@@ -128,7 +128,7 @@ namespace ModCommon
         }
 
         //from will be top1,left1,right1,door1,etc...
-        public IEnumerator EnterZone( string name, string from, string waitUntilGameObjectIsLoaded = "", List<string> removeList = null )
+        public static IEnumerator EnterZone( string name, string from, string waitUntilGameObjectIsLoaded = "", List<string> removeList = null )
         {
             //find a source transition
             string currentSceneTransition = GameObject.FindObjectOfType<TransitionPoint>().gameObject.name;
@@ -188,7 +188,7 @@ namespace ModCommon
             }
         }        
 
-        public void SetNoclip( bool state )
+        public static void SetNoclip( bool state )
         {
             noclip = state;
 
@@ -205,16 +205,16 @@ namespace ModCommon
             }
         }
 
-        public bool NoClipState {
+        public static bool NoClipState {
             get {
                 return noclip;
             }
         }
 
-        Contractor noClipRunner = new Contractor();
-        Vector3 noclipPos;
-        bool noclip = false;
-        public void DoNoclip()
+        static Contractor noClipRunner = new Contractor();
+        static Vector3 noclipPos;
+        static bool noclip = false;
+        public static void DoNoclip()
         {
             if( HeroController.instance == null || HeroController.instance.gameObject == null || !HeroController.instance.gameObject.activeInHierarchy )
                 return;

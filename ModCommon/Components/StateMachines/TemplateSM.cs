@@ -13,15 +13,18 @@ namespace ModCommon
     //Feel free to copy and use this as a base for starting a new state machine
     public class TemplateSM : GameStateMachine
     {
+        //Example components our state machine might need
         public MeshRenderer mainRenderer;
         public tk2dSpriteAnimator mainAnimator;
         public AudioSource actorAudioSource;
         public UnityEngine.Audio.AudioMixerSnapshot audioSnapshot;
 
+        //Example helpers
         public Dictionary<string, AudioClip> audioClips = new Dictionary<string, AudioClip>();
         public Dictionary<string, ParticleSystem> particleSystems = new Dictionary<string, ParticleSystem>();
         public Dictionary<string, GameObject> gameObjects = new Dictionary<string, GameObject>();
 
+        ///This tells the base class under what conditions your state machine should abort or is considered "not running"
         public override bool Running
         {
             get
@@ -35,13 +38,15 @@ namespace ModCommon
             }
         }
 
+        /// Call any get's here. This will be called each time the object becomes active, before your states are entered.
         protected override void SetupRequiredReferences()
         {
             base.SetupRequiredReferences();
             mainRenderer = GetComponent<MeshRenderer>();
             mainAnimator = GetComponent<tk2dSpriteAnimator>();
         }
-
+        
+        /// Use this is the entry point, use this to transition into your state machine's logic
         protected override IEnumerator Init()
         {
             yield return base.Init();
@@ -52,13 +57,15 @@ namespace ModCommon
             //or execute our state logic over time in here
             for(;;)
             {
+                //do logic or w/e
                 yield return new WaitForEndOfFrame();
             }
 
             //set the next state to transition to
             //nextState = Init;
 
-            yield break;
+            //end of state, will transition to whatever nextState is set to
+            //yield break;
         }
 
         /// <summary>
@@ -93,12 +100,15 @@ namespace ModCommon
             yield return GetValueFromAction<AudioClip, AudioPlayerOneShotSingle>(gameObject, "FSMName", "StateName", "variableName", SetStateMachineValue, 0);
         }
 
+        /// Destroy any logic we're overriding here. For example, if your state machine reimplements the logic for the Superdash FSM, then find and destroy that FSM here.
+        /// Using the base class logic will cause ALL PLAYMAKER FSMS and other related components to be destroyed on this game object and all its children automatically.
         protected override void RemoveDeprecatedComponents()
         {
             //TODO: uncomment to remove a lot of stuff on this object and all its children
             //base.RemoveDeprecatedComponents();
         }
 
+        //Example of using a non-generic function to get a value from GetValueFromAction
         protected virtual void SetAudioSource(AudioSource value)
         {
             if(value == null)
@@ -109,6 +119,7 @@ namespace ModCommon
             actorAudioSource = value;
         }
 
+        //Example of using a generic function to get a value from GetValueFromAction
         protected virtual void SetStateMachineValue<T>(T value)
         {
             if(value as AudioClip != null)
@@ -139,6 +150,7 @@ namespace ModCommon
             }
         }
 
+        //Example helper for the generic getter function
         void SetStateMachineValue<D, T>(D dictionary, string name, T value)
             where D : Dictionary<string,T>
             where T : class

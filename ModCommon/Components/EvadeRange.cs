@@ -7,6 +7,7 @@ using UnityEngine;
 
 namespace ModCommon
 {
+    //TODO: convert to using GameStateMachine
     public class EvadeRange : RangeCheck
     {
         public bool IsOnCooldown { get; private set; }
@@ -44,17 +45,13 @@ namespace ModCommon
         {
             bodyCollider = GetComponent<BoxCollider2D>();
             currentState = On();
-            for(; ; )
+
+            while( IsOnCooldown )
             {
                 yield return new WaitForEndOfFrame();
-
-                if( IsOnCooldown )
-                    continue;
-
-                yield return currentState;
             }
 
-            yield break;
+            yield return currentState;
         }
 
         IEnumerator On()
