@@ -86,7 +86,6 @@
     <Compile Include="Components\StateMachines\TemplateSM.cs" />
     <Compile Include="Components\StateMachines\Rewrites\ThrowEffect.cs" />
     <Compile Include="ModCommon.cs" />
-    <Compile Include="ModCommonMiscUtils.cs" />
     <Compile Include="ModCommonSettings.cs" />
     <Compile Include="Extensions\ComponentExtensions.cs" />
     <Compile Include="Extensions\GameObjectExtensions.cs" />
@@ -100,6 +99,7 @@
     <Compile Include="Common\GameSingleton.cs" />
     <Compile Include="Common\Math.cs" />
     <Compile Include="Common\mt19937.cs" />
+    <Compile Include="ModCommonTools.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Common\RNG.cs" />
     <Compile Include="Extensions\StringExtensions.cs" />
