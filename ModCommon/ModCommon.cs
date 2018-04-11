@@ -35,6 +35,8 @@ namespace ModCommon
 
             UnRegisterCallbacks();
             RegisterCallbacks();
+
+            DevLog.Instance.Hide();
         }
 
         void SetupDefaulSettings()
