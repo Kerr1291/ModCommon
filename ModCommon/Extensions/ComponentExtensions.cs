@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using UnityEngine;
+using System.Reflection;
 
 namespace ModCommon
 {
@@ -22,6 +23,11 @@ namespace ModCommon
                 Dev.Log( componentHeader + @" \--Component: " + c.GetType().Name );
             }
         }
+
+        //public static void PrintComponentPublicFields(this Component c, string componentHeader = "", System.IO.StreamWriter file = null )
+        //{
+
+        //}
 
         public static void PrintPersistentBoolItem(this Component c, string componentHeader = "", System.IO.StreamWriter file = null )
         {

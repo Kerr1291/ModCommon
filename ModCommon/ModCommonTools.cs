@@ -126,10 +126,11 @@ namespace ModCommon
             Dev.LogError( "Gate name " + name + "does not conform to a valid gate position type. Make sure gate name has the form 'left1'" );
             return GlobalEnums.GatePosition.unknown;
         }
-
+         
         //from will be top1,left1,right1,door1,etc...
-        public static IEnumerator EnterZone( string name, string from, string waitUntilGameObjectIsLoaded = "", List<string> removeList = null )
+        public static IEnumerator EnterZone( string name, string enterFrom, string exitTransition, string waitUntilGameObjectIsLoaded = "", List<string> removeList = null )
         {
+            Dev.Where();  
             //find a source transition
             string currentSceneTransition = GameObject.FindObjectOfType<TransitionPoint>().gameObject.name;
             string currentScene = GameManager.instance.sceneName;
@@ -137,18 +138,19 @@ namespace ModCommon
             //update the last entered
             TransitionPoint.lastEntered = currentSceneTransition;
 
-            //place us in sly's storeroom
+            Dev.Log( "Creating transition" );
             GameManager.instance.BeginSceneTransition( new GameManager.SceneLoadInfo
             {
                 SceneName = name,
-                EntryGateName = from,
-                HeroLeaveDirection = new GlobalEnums.GatePosition?( GlobalEnums.GatePosition.door ),
-                EntryDelay = 1f,
+                EntryGateName = enterFrom,
+                HeroLeaveDirection = new GlobalEnums.GatePosition?( GetGatePosition( exitTransition ) ),
+                EntryDelay = 0.1f,
                 WaitForSceneTransitionCameraFade = true,
                 Visualization = GameManager.SceneLoadVisualizations.Default,
                 AlwaysUnloadUnusedAssets = false
             } );
 
+            Dev.Log( "waitUntilGameObjectIsLoaded??" );
             if( !string.IsNullOrEmpty( waitUntilGameObjectIsLoaded ) )
             {
                 while( GameObject.Find( waitUntilGameObjectIsLoaded ) == null )
@@ -158,8 +160,9 @@ namespace ModCommon
             {
                 yield return new WaitForEndOfFrame();
             }
+            Dev.Log( "Done!" );
 
-            if( removeList != null )
+            if( removeList != null && removeList.Count > 0 )
             {
                 Scene scene = UnityEngine.SceneManagement.SceneManager.GetSceneByName(name);
                 foreach( string s in removeList )

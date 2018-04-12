@@ -8,6 +8,9 @@ namespace ModCommon
 {
     public class PreventOutOfBounds : MonoBehaviour
     {
+        //The raycast, the object colliding, the object that it collided with
+        public Action<RaycastHit2D, GameObject, GameObject> onBoundCollision;
+
         Vector3 previousLocation;
         Rigidbody2D body;
         BoxCollider2D bodyCollider;
@@ -41,6 +44,11 @@ namespace ModCommon
 
                 transform.position = collisionPoint + new Vector3( collisionNormal.x * size.x * 0.5f, collisionNormal.y * size.y * 0.5f );
                 previousLocation = transform.position;
+
+                if( onBoundCollision != null )
+                {
+                    onBoundCollision.Invoke( result, gameObject, result.collider.gameObject );
+                }
             }
             else
             {

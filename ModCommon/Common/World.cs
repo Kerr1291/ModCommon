@@ -36,7 +36,7 @@ namespace ModCommon
         }
 
         /// <summary>
-        /// Filter the list by .Contsins(filter)
+        /// Filter the list by .Contains(filter)
         /// </summary>
         public List<WorldInfo.TransitionInfo> GetTransitionsWithNameContaining(string filter)
         {
@@ -44,7 +44,7 @@ namespace ModCommon
         }
 
         /// <summary>
-        /// Filter the list by .Contsins(filter)
+        /// Filter the list by .Contains(filter)
         /// </summary>
         public List<string> GetTransitionsNamesContaining(string filter)
         {
@@ -52,16 +52,24 @@ namespace ModCommon
         }
 
         /// <summary>
-        /// Filter the list by .Contsins(filter)
+        /// Filter the list by .Contains(filter)
         /// </summary>
         public List<MapNode> GetNeighborsNamesContaining(Dictionary<string, MapNode> map, string filter)
         {
             return scene.Transitions.Select(x => map[x.DestinationSceneName]).Where(x => x.scene.SceneName.Contains(filter)).ToList();
         }
 
+        /// <summary>
+        /// Get a transition with this name
+        /// </summary>
+        public WorldInfo.TransitionInfo GetTransitionWithName( string match )
+        {
+            var result = scene.Transitions.Where( x => x.DoorName == match ).ToList();
+            return (result == null || result.Count <= 0) ? default( WorldInfo.TransitionInfo ) : result[0];
+        }
 
         /// <summary>
-        /// Filter the list by !.Contsins(filter)
+        /// Filter the list by !.Contains(filter)
         /// </summary>
         public List<WorldInfo.TransitionInfo> GetTransitionsWithNameNotContaining(string filter)
         {
@@ -69,7 +77,7 @@ namespace ModCommon
         }
 
         /// <summary>
-        /// Filter the list by !.Contsins(filter)
+        /// Filter the list by !.Contains(filter)
         /// </summary>
         public List<string> GetTransitionsNamesNotContaining(string filter)
         {
@@ -77,7 +85,7 @@ namespace ModCommon
         }
 
         /// <summary>
-        /// Filter the list by !.Contsins(filter)
+        /// Filter the list by !.Contains(filter)
         /// </summary>
         public List<MapNode> GetNeighborsNamesNotContaining(Dictionary<string, MapNode> map, string filter)
         {
@@ -93,8 +101,8 @@ namespace ModCommon
         static Dictionary<string, MapNode> map = new Dictionary<string, MapNode>();
         static public Dictionary<string, MapNode> Map
         {
-            get
-            {
+            get {
+                Dev.Where();
                 if(map.Count <= 0)
                     BuildMap();
                 return map;
@@ -104,6 +112,7 @@ namespace ModCommon
         //Can just call this if you don't want to iterate over all the scenes
         public static void BuildMap()
         {
+            Dev.Where();
             BuildMap( GameManager.instance.WorldInfo );
         }
 
@@ -172,18 +181,49 @@ namespace ModCommon
 
         static void BuildMap(WorldInfo worldInfo)
         {
-            Dictionary<string, WorldInfo.SceneInfo> scenes = new Dictionary<string, WorldInfo.SceneInfo>();
+            Dev.Where();
 
+            int index = -1;
             foreach(var s in worldInfo.Scenes)
             {
+                index++;
+
+                if(s == null)
+                {
+                    Dev.LogWarning( "WorldInfo index " + index + " is null!" );
+                    continue;
+                }
+                if( s.Transitions == null )
+                {
+                    Dev.LogWarning( "Transitions for index " + index + " are null!" );
+                    continue;
+                }
+
                 MapNode node = new MapNode();
                 node.scene = s;
                 node.connections = new Dictionary<string,WorldInfo.SceneInfo>();
+
                 foreach(var connection in s.Transitions)
                 {
-                    var w = scenes[connection.DestinationSceneName];
+                    var w = worldInfo.Scenes.FirstOrDefault(x => x.SceneName == connection.DestinationSceneName);
+
+                    //invalid connection, skip
+                    if( EqualityComparer<WorldInfo.SceneInfo>.Default.Equals(w, default( WorldInfo.SceneInfo ) ))
+                    {
+                        Dev.LogWarning( "Skipping connection to " + connection.DestinationSceneName + " because it is invalid" );
+                        continue;
+                    }
+
                     node.connections.Add(connection.DoorName, w);
                 }
+                
+                //no connections, skip
+                if( node.connections.Count <= 0 )
+                {
+                    Dev.LogWarning( "Skipping creation of a mapnode for scene "+s.SceneName+" because it has no valid connections" );
+                    continue;
+                }
+
                 map.Add(s.SceneName, node);
             }
         }
