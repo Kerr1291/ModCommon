@@ -104,7 +104,7 @@ namespace ModCommon
         //Can just call this if you don't want to iterate over all the scenes
         public static void BuildMap()
         {
-            //BuildMap(GameManager.instance.WorldInfo);
+            BuildMap( GameManager.instance.WorldInfo );
         }
 
         Dictionary<string, MapNode> remaining = new Dictionary<string, MapNode>();
@@ -145,6 +145,8 @@ namespace ModCommon
                 BuildMap();
             }
 
+            remaining = new Dictionary<string, MapNode>(map);
+
             if(!map.ContainsKey(startScene))
             {
                 Dev.LogError("Scene " + startScene + " not found in game map!");
@@ -168,7 +170,7 @@ namespace ModCommon
         }
 
 
-        void BuildMap(WorldInfo worldInfo)
+        static void BuildMap(WorldInfo worldInfo)
         {
             Dictionary<string, WorldInfo.SceneInfo> scenes = new Dictionary<string, WorldInfo.SceneInfo>();
 
@@ -183,7 +185,6 @@ namespace ModCommon
                     node.connections.Add(connection.DoorName, w);
                 }
                 map.Add(s.SceneName, node);
-                remaining.Add(s.SceneName, node);
             }
         }
 
