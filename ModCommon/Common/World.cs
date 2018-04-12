@@ -147,7 +147,7 @@ namespace ModCommon
 
             if(!map.ContainsKey(startScene))
             {
-                nv.Dev.LogError("Scene " + startScene + " not found in game map!");
+                Dev.LogError("Scene " + startScene + " not found in game map!");
                 yield break;
             }
 
