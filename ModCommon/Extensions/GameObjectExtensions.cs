@@ -152,6 +152,60 @@ namespace ModCommon
             }
         }
 
+        public static void WriteObjectSceneHierarchyTree( this GameObject gameObject, string fileName )
+        {
+            System.IO.StreamWriter file = null;
+            file = new System.IO.StreamWriter( Application.dataPath + "/Managed/Mods/" + fileName );
+            gameObject.WriteObjectSceneHierarchyTree( file );
+            file.Close();
+        }
+
+        public static void WriteObjectSceneHierarchyTree( this GameObject gameObject, System.IO.StreamWriter file )
+        {
+            if( gameObject == null )
+                return;
+
+            if( file != null )
+            {
+                file.WriteLine( "START =====================================================" );
+                file.WriteLine( "Printing scene hierarchy for game object: " + gameObject.name );
+            }
+            else
+            {
+                Dev.Log( "START =====================================================" );
+                Dev.Log( "Printing scene hierarchy for game object: " + gameObject.name );
+            }
+
+            foreach( Transform t in gameObject.GetComponentsInChildren<Transform>( true ) )
+            {
+                string objectNameAndPath = t.gameObject.PrintSceneHierarchyPath();
+
+                if( file != null )
+                {
+                    file.WriteLine( objectNameAndPath );
+                }
+                else
+                {
+                    Dev.Log( objectNameAndPath );
+                }
+
+                string componentHeader = "";
+                for( int i = 0; i < ( objectNameAndPath.Length - t.gameObject.name.Length ); ++i )
+                    componentHeader += " ";
+
+                GameInspector.PrintObject( gameObject, componentHeader, file );
+            }
+
+            if( file != null )
+            {
+                file.WriteLine( "END +++++++++++++++++++++++++++++++++++++++++++++++++++++++" );
+            }
+            else
+            {
+                Dev.Log( "END +++++++++++++++++++++++++++++++++++++++++++++++++++++++" );
+            }
+        }
+
         public static T GetOrAddComponent<T>( this GameObject source ) where T : UnityEngine.Component
         {
             T result = source.GetComponent<T>();

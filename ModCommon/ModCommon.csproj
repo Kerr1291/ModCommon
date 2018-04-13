@@ -62,6 +62,7 @@
     <Compile Include="Common\Contractor.cs" />
     <Compile Include="Common\Dev.cs" />
     <Compile Include="Common\DevLog.cs" />
+    <Compile Include="Common\GameInspector.cs" />
     <Compile Include="Common\PathFinding\AStar.cs" />
     <Compile Include="Common\World.cs" />
     <Compile Include="Common\XMLHelpers\XMLUtils.cs" />

@@ -24,11 +24,6 @@ namespace ModCommon
             }
         }
 
-        //public static void PrintComponentPublicFields(this Component c, string componentHeader = "", System.IO.StreamWriter file = null )
-        //{
-
-        //}
-
         public static void PrintPersistentBoolItem(this Component c, string componentHeader = "", System.IO.StreamWriter file = null )
         {
             if( c as PersistentBoolItem != null )

@@ -9,73 +9,10 @@ using System.IO;
 
 using Component = UnityEngine.Component;
 
-namespace System.Runtime.CompilerServices
+namespace ModCommon
 {
-    /// <summary>
-    /// Causes the method's name that is calling the function to be compiled into the method call.
-    /// </summary>
-    [AttributeUsage(AttributeTargets.Parameter)]
-    public class CallerMemberNameAttribute : Attribute
+    public class GameInspector
     {
-    }
-}
-
-namespace nv
-{
-    public class GameInspector : GameSingleton<GameInspector>
-    {
-        public GameObject test;
-
-        public bool runDebugInput = true;
-
-        static IEnumerator debugInput = null;
-        IEnumerator DebugInput()
-        {
-            for(;;)
-            {                
-                //resume from suspend
-                if(UnityEngine.Input.GetKeyDown(KeyCode.BackQuote))
-                {
-                }
-                yield return new WaitForEndOfFrame();
-            }
-            yield break;
-        }
-
-        private void OnEnable()
-        {
-            if(runDebugInput)
-            {
-                if(debugInput == null)
-                {
-                    debugInput = DebugInput();
-                    StartCoroutine(debugInput);
-                }
-            }
-        }
-
-        private void OnDisable()
-        {
-            if(runDebugInput)
-            {
-                if(debugInput != null)
-                {
-                    StopCoroutine(debugInput);
-                    debugInput = null;
-                }
-            }
-        }
-
-        private IEnumerator Start()
-        {
-            PrintObject(test);
-            //foreach(Component c in test.GetComponents<Component>())
-            //{
-            //    PrintObject(test);
-            //}
-            yield break;
-        }
-
         static Type GetRootType(Type t)
         {
             while(t != null && t.Name != "Object" && t.Name != "object")
@@ -338,12 +275,14 @@ namespace nv
         {
             try
             {
-                string text = Newtonsoft.Json.JsonConvert.SerializeObject(v);
-                if(string.IsNullOrEmpty(text))
-                {
-                    text = JsonUtility.ToJson(text);
-                }
+                string text = JsonUtility.ToJson( v );
                 return text;
+                //string text = Newtonsoft.Json.JsonConvert.SerializeObject(v);
+                //if(string.IsNullOrEmpty(text))
+                //{
+                //    text = JsonUtility.ToJson(v);
+                //}
+                //return text;
             }
             catch(Exception e)
             {
