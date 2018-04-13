@@ -25,13 +25,13 @@ namespace ModCommon
 
         Vector3 previousLocation;
         Rigidbody2D body;
-        BoxCollider2D bodyCollider;
+        Collider2D bodyCollider;
 
         private void OnEnable()
         {
             previousLocation = transform.position;
             body = GetComponent<Rigidbody2D>();
-            bodyCollider = GetComponent<BoxCollider2D>();
+            bodyCollider = GetComponent<Collider2D>();
         }
 
         private void LateUpdate()
@@ -75,7 +75,8 @@ namespace ModCommon
                 Vector3 collisionPoint = result.point;
                 Vector3 collisionNormal = result.normal;
 
-                Vector3 size = bodyCollider.size;
+                //TODO: update this to properly take different collider types and the object's orientation into account (see DebugColliders.cs for how to do that)
+                Vector3 size = bodyCollider.bounds.size;
 
                 transform.position = collisionPoint + new Vector3( collisionNormal.x * size.x * 0.5f, collisionNormal.y * size.y * 0.5f );
                 previousLocation = transform.position;
