@@ -9,6 +9,32 @@ namespace ModCommon
 {
     public static class ComponentExtensions
     {
+        public static void WriteComponentTree( this MonoBehaviour c, string fileName, bool writeProperties = false )
+        {
+            System.IO.StreamWriter file = null;
+            file = new System.IO.StreamWriter( Application.dataPath + "/Managed/Mods/" + fileName );
+            string objectNameAndPath = c.gameObject.PrintSceneHierarchyPath();
+            if( file != null )
+            {
+                file.WriteLine( objectNameAndPath );
+            }
+            GameInspector.PrintObject( c, "", file );
+            file.Close();
+        }
+
+        public static void WriteComponentTree( this Component c, string fileName, bool writeProperties = false )
+        {
+            System.IO.StreamWriter file = null;
+            file = new System.IO.StreamWriter( Application.dataPath + "/Managed/Mods/" + fileName );
+            string objectNameAndPath = c.gameObject.PrintSceneHierarchyPath();
+            if( file != null )
+            {
+                file.WriteLine( objectNameAndPath );
+            }
+            GameInspector.PrintObject(c,"",file);
+            file.Close(); 
+        }
+
         public static void PrintComponentType( this Component c, string componentHeader = "", System.IO.StreamWriter file = null )
         {
             if( c == null )

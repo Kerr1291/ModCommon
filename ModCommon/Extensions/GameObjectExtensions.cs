@@ -152,15 +152,15 @@ namespace ModCommon
             }
         }
 
-        public static void WriteObjectSceneHierarchyTree( this GameObject gameObject, string fileName )
+        public static void WriteObjectSceneHierarchyTree( this GameObject gameObject, string fileName, bool writeProperties = false )
         {
             System.IO.StreamWriter file = null;
             file = new System.IO.StreamWriter( Application.dataPath + "/Managed/Mods/" + fileName );
             gameObject.WriteObjectSceneHierarchyTree( file );
-            file.Close();
+            file.Close(); 
         }
 
-        public static void WriteObjectSceneHierarchyTree( this GameObject gameObject, System.IO.StreamWriter file )
+        public static void WriteObjectSceneHierarchyTree( this GameObject gameObject, System.IO.StreamWriter file, bool writeProperties = false )
         {
             if( gameObject == null )
                 return;

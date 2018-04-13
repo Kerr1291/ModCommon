@@ -1,4 +1,8 @@
-﻿using System;
+﻿//To get the full dumped data you'll need to get the Json .dll and place it in the /Mods directory
+//The API will think it's a mod and give you an error on startup (which you can ignore)
+//TO use; uncomment the below line and get the .dll from NuGet: Install-Package Newtonsoft.Json
+//#define USING_NEWTONSOFT
+using System;
 using System.ComponentModel;
 using System.Collections;
 using System.Collections.Generic;
@@ -13,6 +17,10 @@ namespace ModCommon
 {
     public class GameInspector
     {
+        //For printing an FSM component you'll want 5-7, for printing a game object with an FSM you may want higher? But be prepared for huge files....
+        //WARNING: Careful setting this high! This can create some huge output files very fast!
+        static int maxReferenceRecursion = 7;
+
         static Type GetRootType(Type t)
         {
             while(t != null && t.Name != "Object" && t.Name != "object")
@@ -23,11 +31,10 @@ namespace ModCommon
         }
 
         static List<string> parentObject = new List<string>();
-
+        static bool isInFSM = false;
         static BindingFlags bflags = BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Static | BindingFlags.Instance;
-        static int maxDepth = 3;
         static int depth = -1;
-        public static void PrintObject<T>(T thing, string componentHeader = "", StreamWriter file = null)
+        public static void PrintObject<T>(T thing, string componentHeader = "", StreamWriter file = null, bool writeProperties = false )
         {
             depth++;
             if(thing == null)
@@ -51,41 +58,29 @@ namespace ModCommon
                 if(thing as Component)
                 {
                     name = (thing as Component).gameObject.name;
-                    if( parentObject.Contains( name ))
-                    {
-                        depth--;
-                        return;
-                    }
                     parentObject.Add( name );
                 }
                 else
                 {
                     name = (thing as MonoBehaviour).gameObject.name;
-                    if( parentObject.Contains( name ))
-                    {
-                        depth--;
-                        return;
-                    }
                     parentObject.Add( name );
                 }
                 PrintDebugLine(thing.GetType().Name+" ________________________________ ", name, componentHeader, file);
             }
             else if(thing as GameObject)
             {
-                if( parentObject.Contains( ( thing as GameObject ).name ) )
-                {
-                    depth--;
-                    return;
-                }
                 parentObject.Add( ( thing as GameObject ).name );
                 PrintDebugLine("GameObject Name: ", (thing as GameObject).name, componentHeader, file);
             }
             else
             {
+                parentObject.Add( System.Guid.NewGuid().ToString() );
                 PrintDebugLine("Object TypeName: ", thing.GetType().Name, componentHeader, file);
+                if( thing.GetType().Name.StartsWith( "Fsm" ) )
+                    writeProperties = true;
             }
 
-            if(depth > maxDepth)
+            if(depth > maxReferenceRecursion)
             {
                 parentObject.RemoveAt( parentObject.Count - 1 );
                 //PrintDebugLine("maxDepth REACHED. CANCELING RECURSIVE DUMP: ", depth.ToString(), componentHeader, file);
@@ -106,14 +101,68 @@ namespace ModCommon
 
                     if(fi == null)
                         continue;
-                    
-                    if(fi.FieldType.IsArray)
+
+                    //just skip this....
+                    if( info.Name == "fsmList"
+                         || ( info.Name == "<BecameInvisible>k__BackingField" )
+                         || ( info.Name == "<BecameVisible>k__BackingField" )
+                         || ( info.Name == "<CollisionEnter>k__BackingField" )
+                         || ( info.Name == "<CollisionExit>k__BackingField" )
+                         || ( info.Name == "<CollisionStay>k__BackingField" )
+                         || ( info.Name == "<CollisionEnter2D>k__BackingField" )
+                         || ( info.Name == "<CollisionExit2D>k__BackingField" )
+                         || ( info.Name == "<CollisionStay>k__BackingField" )
+                         || ( info.Name == "<CollisionStay2D>k__BackingField" )
+                         || ( info.Name == "<ControllerColliderHit>k__BackingField" )
+                         || ( info.Name == "<Finished>k__BackingField" )
+                         || ( info.Name == "<LevelLoaded>k__BackingField" )
+                         || ( info.Name == "<MouseDown>k__BackingField" )
+                         || ( info.Name == "<MouseDrag>k__BackingField" )
+                         || ( info.Name == "<MouseEnter>k__BackingField" )
+                         || ( info.Name == "<MouseExit>k__BackingField" )
+                         || ( info.Name == "<MouseOver>k__BackingField" )
+                         || ( info.Name == "<MouseUp>k__BackingField" )
+                         || ( info.Name == "<MouseUpAsButton>k__BackingField" )
+                         || ( info.Name == "<TriggerEnter>k__BackingField" )
+                         || ( info.Name == "<TriggerExit>k__BackingField" )
+                         || ( info.Name == "<TriggerStay>k__BackingField" )
+                         || ( info.Name == "<TriggerEnter2D>k__BackingField" )
+                         || ( info.Name == "<TriggerExit2D>k__BackingField" )
+                         || ( info.Name == "<TriggerStay2D>k__BackingField" )
+                         || ( info.Name == "<ApplicationFocus>k__BackingField" )
+                         || ( info.Name == "<ApplicationPause>k__BackingField" )
+                         || ( info.Name == "<ApplicationQuit>k__BackingField" )
+                         || ( info.Name == "<ParticleCollision>k__BackingField" )
+                         || ( info.Name == "<JointBreak>k__BackingField" )
+                         || ( info.Name == "<JointBreak2D>k__BackingField" )
+                         || ( info.Name == "<PlayerConnected>k__BackingField" )
+                         || ( info.Name == "<ServerInitialized>k__BackingField" )
+                         || ( info.Name == "<ConnectedToServer>k__BackingField" )
+                         || ( info.Name == "<PlayerDisconnected>k__BackingField" )
+                         || ( info.Name == "<DisconnectedFromServer>k__BackingField" )
+                         || ( info.Name == "<FailedToConnect>k__BackingField" )
+                         || ( info.Name == "<FailedToConnectToMasterServer>k__BackingField" )
+                         || ( info.Name == "<MasterServerEvent>k__BackingField" )
+                         || ( info.Name == "<NetworkInstantiate>k__BackingField" ) )
+                        continue;
+
+                    bool forcePrintThis = false;
+
+                    if( fi.Name == "byteData" )
+                        forcePrintThis = true;
+                    if( fi.Name.Contains("fsm") && fi.Name.Contains( "Params" ) )
+                        forcePrintThis = true;
+                    if( fi.FieldType.Name.Contains( "FsmTransition") )
+                        forcePrintThis = true;
+
+                    if(!forcePrintThis && fi.FieldType.IsArray)
                     {
+                        PrintDebugLine( "Field", info.Name, componentHeader, file );
                         //Array data = fi.ReflectedType.GetProperty("SyncRoot").GetValue(thing, null) as Array;
                         Array data = fi.GetValue(thing) as Array;
                         foreach(var value in data)
                         {
-                            PrintObject(value, componentHeader + "----", file);
+                            PrintObject(value, componentHeader + "-|--", file);
                         }
                     }
                     else
@@ -123,10 +172,28 @@ namespace ModCommon
                         string rootType = GetRootType(fi.FieldType).Name;
                         string typeName = fi.FieldType.Name;
 
-                        if((typeName == "string")
+                        try
+                        {
+                            object innerObject = fi.ReflectedType.GetField(fi.Name, bflags).GetValue(thing);
+
+                            if( innerObject as MonoBehaviour != null && parentObject.Contains( ( innerObject as MonoBehaviour ).name ) )
+                                forcePrintThis = true;
+                            else if( innerObject as Component != null && parentObject.Contains( ( innerObject as Component ).name ) )
+                                forcePrintThis = true;
+                            else if( innerObject as GameObject != null && parentObject.Contains( ( innerObject as GameObject ).name ) )
+                                forcePrintThis = true;
+                        }
+                        catch( Exception ) { }
+
+                        if((typeName == "string" )
+                         || ( forcePrintThis )
+                         || ( typeName == "HeroController" )
+                         || ( typeName == "PlayerData" )
+                         || ( typeName == "UIManager" )
+                         || ( typeName == "GameManager" )
                          || (typeName == "Transform")
-                         || (typeName == "Array")
-                         || (typeName == "List")
+                         || (typeName == "Array" )
+                         || (typeName == "List`1")
                          || (typeName == "Int32")
                          || (typeName == "Boolean")
                          || (typeName == "String")
@@ -136,7 +203,58 @@ namespace ModCommon
                          || (typeName == "Double")
                          || (typeName == "Decimal")
                          || (typeName == "Vector2")
-                         || (typeName == "Vector3")
+                         || (typeName == "Vector3" )
+                         || ( info.Name == "byteData" )
+                         || ( info.Name == "colorIndex" )
+                         || ( info.Name == "<BecameInvisible>k__BackingField" )
+                         || ( info.Name == "<BecameVisible>k__BackingField" )
+                         || ( info.Name == "<CollisionEnter>k__BackingField" )
+                         || ( info.Name == "<CollisionExit>k__BackingField" )
+                         || ( info.Name == "<CollisionStay>k__BackingField" )
+                         || ( info.Name == "<CollisionEnter2D>k__BackingField" )
+                         || ( info.Name == "<CollisionExit2D>k__BackingField" )
+                         || ( info.Name == "<CollisionStay>k__BackingField" )
+                         || ( info.Name == "<CollisionStay2D>k__BackingField" )
+                         || ( info.Name == "<ControllerColliderHit>k__BackingField" )
+                         || ( info.Name == "<Finished>k__BackingField" )
+                         || ( info.Name == "<LevelLoaded>k__BackingField" )
+                         || ( info.Name == "<MouseDown>k__BackingField" )
+                         || ( info.Name == "<MouseDrag>k__BackingField" )
+                         || ( info.Name == "<MouseEnter>k__BackingField" )
+                         || ( info.Name == "<MouseExit>k__BackingField" )
+                         || ( info.Name == "<MouseOver>k__BackingField" )
+                         || ( info.Name == "<MouseUp>k__BackingField" )
+                         || ( info.Name == "<MouseUpAsButton>k__BackingField" )
+                         || ( info.Name == "<TriggerEnter>k__BackingField" )
+                         || ( info.Name == "<TriggerExit>k__BackingField" )
+                         || ( info.Name == "<TriggerStay>k__BackingField" )
+                         || ( info.Name == "<TriggerEnter2D>k__BackingField" )
+                         || ( info.Name == "<TriggerExit2D>k__BackingField" )
+                         || ( info.Name == "<TriggerStay2D>k__BackingField" )
+                         || ( info.Name == "<ApplicationFocus>k__BackingField" )
+                         || ( info.Name == "<ApplicationPause>k__BackingField" )
+                         || ( info.Name == "<ApplicationQuit>k__BackingField" )
+                         || ( info.Name == "<ParticleCollision>k__BackingField" )
+                         || ( info.Name == "<JointBreak>k__BackingField" )
+                         || ( info.Name == "<JointBreak2D>k__BackingField" )
+                         || ( info.Name == "<PlayerConnected>k__BackingField" )
+                         || ( info.Name == "<ServerInitialized>k__BackingField" )
+                         || ( info.Name == "<ConnectedToServer>k__BackingField" )
+                         || ( info.Name == "<PlayerDisconnected>k__BackingField" )
+                         || ( info.Name == "<DisconnectedFromServer>k__BackingField" )
+                         || ( info.Name == "<FailedToConnect>k__BackingField" )
+                         || ( info.Name == "<FailedToConnectToMasterServer>k__BackingField" )
+                         || ( info.Name == "<MasterServerEvent>k__BackingField" )
+                         || ( info.Name == "<NetworkInstantiate>k__BackingField" )
+                         || ( info.Name == "playerData" )
+                         || ( info.Name == "ui" )
+                         || ( info.Name == "gm" )
+                         || ( info.Name == "mesh" )
+                         || ( info.Name == "NetworkMessageInfo" )
+                         || ( info.Name == "actionData" )
+                         || ( info.Name == "StateColors" )
+                         || ( info.Name == "subFsmList" )
+                         || ( isInFSM && info.Name == "fsm" )
                          || (typeName == "Vector4")
                          || (typeName == "Quaternion")
                          || (typeName == "Rect")
@@ -155,8 +273,15 @@ namespace ModCommon
                             {
                                 try
                                 {
+                                    if( info.Name == "fsm" )
+                                        isInFSM = true;
+
+                                    PrintDebugLine( "Field: " , info.Name, componentHeader, file );
                                     object innerObject = fi.ReflectedType.GetField(fi.Name, bflags).GetValue(thing);
-                                    PrintObject(innerObject, componentHeader + "----", file);
+                                    PrintObject(innerObject, componentHeader + "-|--", file);
+
+                                    if( info.Name == "fsm" )
+                                        isInFSM = false;
                                 }
                                 catch(Exception) { }
                             }
@@ -166,83 +291,148 @@ namespace ModCommon
                                 PrintDebugLine("Field: " + info.Name + " ", output, componentHeader, file);
                             }
                         }
-
-
-
-
-                        //string output = string.Empty;
-                        //if(fi != null)
-                        //{
-                        //    output = PrintField(thing, fi);
-                        //}
-                        //PrintDebugLine("Field: " + info.Name + ": ", output, componentHeader, file);
                     }
                 }
 
-                foreach(PropertyInfo info in type.GetProperties(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Static | BindingFlags.Instance))
+                if( writeProperties )
                 {
-                    PropertyInfo pi = info;
-
-                    if(pi == null)
-                        continue;
-
-                    string output = string.Empty;
-                    if(pi != null)
+                    foreach( PropertyInfo info in type.GetProperties( BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Static | BindingFlags.Instance ) )
                     {
-                        string rootType = GetRootType(pi.PropertyType).Name;
-                        string typeName = pi.PropertyType.Name;
+                        //don't print vector properties....
+                        if( thing.GetType().Name == "Vector2"
+                            || thing.GetType().Name == "Vector3"
+                            || thing.GetType().Name == "Bounds"
+                            || thing.GetType().Name == "Vector4" )
+                            continue;
 
-                        if((typeName == "string")
-                         || (typeName == "Transform")
-                         || (typeName == "Array")
-                         || (typeName == "List")
-                         || (typeName == "Int32")
-                         || (typeName == "Boolean")
-                         || (typeName == "String")
-                         || (typeName == "Float")
-                         || (typeName == "FloatValue")
-                         || (typeName == "Single")
-                         || (typeName == "Double")
-                         || (typeName == "Decimal")
-                         || (typeName == "Vector2")
-                         || (typeName == "Vector3")
-                         || (typeName == "Vector4")
-                         || (typeName == "Quaternion")
-                         || (typeName == "Rect")
-                         || (typeName == "Matrix4x4")
-                         || (pi.PropertyType.IsEnum)
-                         || (info.Name.Contains("transform"))
-                         || (typeName == "GameObject"))
+                        PropertyInfo pi = info;
+
+                        if( pi == null )
+                            continue;
+                        
+                        //just skip this....
+                        if( info.Name == "fsmList"
+                             || ( info.Name == "BecameInvisible" )
+                             || ( info.Name == "BecameVisible" )
+                             || ( info.Name == "CollisionEnter" )
+                             || ( info.Name == "CollisionExit" )
+                             || ( info.Name == "CollisionStay" )
+                             || ( info.Name == "CollisionEnter2D" )
+                             || ( info.Name == "CollisionExit2D" )
+                             || ( info.Name == "CollisionStay" )
+                             || ( info.Name == "CollisionStay2D" )
+                             || ( info.Name == "ControllerColliderHit" )
+                             || ( info.Name == "Finished" )
+                             || ( info.Name == "LevelLoaded" )
+                             || ( info.Name == "MouseDown" )
+                             || ( info.Name == "MouseDrag" )
+                             || ( info.Name == "MouseEnter" )
+                             || ( info.Name == "MouseExit" )
+                             || ( info.Name == "MouseOver" )
+                             || ( info.Name == "MouseUp" )
+                             || ( info.Name == "MouseUpAsButton" )
+                             || ( info.Name == "TriggerEnter" )
+                             || ( info.Name == "TriggerExit" )
+                             || ( info.Name == "TriggerStay" )
+                             || ( info.Name == "TriggerEnter2D" )
+                             || ( info.Name == "TriggerExit2D" )
+                             || ( info.Name == "TriggerStay2D" )
+                             || ( info.Name == "ApplicationFocus" )
+                             || ( info.Name == "ApplicationPause" )
+                             || ( info.Name == "ApplicationQuit" )
+                             || ( info.Name == "ParticleCollision" )
+                             || ( info.Name == "JointBreak" )
+                             || ( info.Name == "JointBreak2D" )
+                             || ( info.Name == "PlayerConnected" )
+                             || ( info.Name == "ServerInitialized" )
+                             || ( info.Name == "ConnectedToServer" )
+                             || ( info.Name == "PlayerDisconnected" )
+                             || ( info.Name == "DisconnectedFromServer" )
+                             || ( info.Name == "FailedToConnect" )
+                             || ( info.Name == "FailedToConnectToMasterServer" )
+                             || ( info.Name == "MasterServerEvent" )
+                             || ( info.Name == "NetworkInstantiate" ) )
+                            continue;
+
+                        string output = string.Empty;
+                        if( pi != null )
                         {
-                            output = PrintProperty(thing, pi);
-                            PrintDebugLine("Prope: " + info.Name + " ", output, componentHeader, file);
-                        }
-                        else
-                        {
-                            if((rootType == "Object" || rootType == "object")
-                                && (typeName != "object" && typeName != "Object"))
+                            string rootType = GetRootType(pi.PropertyType).Name;
+                            string typeName = pi.PropertyType.Name;
+
+                            bool forcePrintThis = false;
+
+                            try
                             {
-                                try
-                                {
-                                    object innerObject = pi.ReflectedType.GetProperty(pi.Name, bflags).GetValue(thing, null);
-                                    PrintObject(innerObject, componentHeader + "----", file);
-                                }
-                                catch(Exception) { }
+                                object innerObject = pi.ReflectedType.GetProperty(pi.Name, bflags).GetValue(thing, null);
+
+                                if( innerObject as MonoBehaviour != null && parentObject.Contains( ( innerObject as MonoBehaviour ).name ) )
+                                    forcePrintThis = true;
+                                else if( innerObject as Component != null && parentObject.Contains( ( innerObject as Component ).name ) )
+                                    forcePrintThis = true;
+                                else if( innerObject as GameObject != null && parentObject.Contains( ( innerObject as GameObject ).name ) )
+                                    forcePrintThis = true;
+                            }
+                            catch( Exception ) { }
+
+                            if( ( typeName == "string" )
+                             || ( forcePrintThis )
+                             || ( typeName == "Transform" )
+                             || ( typeName == "Array" )
+                             || ( typeName == "List`1" )
+                             || ( typeName == "Int32" )
+                             || ( typeName == "Boolean" )
+                             || ( typeName == "LongLength" )
+                             || ( info.Name == "LongLength" )
+                             || ( info.Name == "ActionData" )
+                             || ( typeName == "String" )
+                             || ( typeName == "Float" )
+                             || ( typeName == "FloatValue" )
+                             || ( typeName == "Single" )
+                             || ( typeName == "Double" )
+                             || ( typeName == "Decimal" )
+                             || ( typeName == "Vector2" )
+                             || ( typeName == "Vector3" )
+                             || ( typeName == "Vector4" )
+                             || ( typeName == "Quaternion" )
+                             || ( typeName == "Rect" )
+                             || ( typeName == "Matrix4x4" )
+                             || ( pi.PropertyType.IsEnum )
+                             || ( info.Name.Contains( "transform" ) )
+                             || ( typeName == "GameObject" ) )
+                            {
+                                output = PrintProperty( thing, pi );
+                                PrintDebugLine( "Prope: " + info.Name + " ", output, componentHeader, file );
                             }
                             else
                             {
-                                output = PrintProperty(thing, pi);
-                                PrintDebugLine("Prope: " + info.Name + " ", output, componentHeader, file);
+                                if( ( rootType == "Object" || rootType == "object" )
+                                    && ( typeName != "object" && typeName != "Object" ) )
+                                {
+                                    try
+                                    {
+                                        PrintDebugLine( "Prope", info.Name, componentHeader, file );
+                                        object innerObject = pi.ReflectedType.GetProperty(pi.Name, bflags).GetValue(thing, null);
+                                        PrintObject( innerObject, componentHeader + "-|--", file );
+                                    }
+                                    catch( Exception ) { }
+                                }
+                                else
+                                {
+                                    output = PrintProperty( thing, pi );
+                                    PrintDebugLine( "Prope: " + info.Name + " ", output, componentHeader, file );
+                                }
                             }
                         }
-                    }
 
-                    if( pi.Name == "SyncRoot" )
-                    {
-                        Array data = pi.ReflectedType.GetProperty("SyncRoot").GetValue(thing, null) as Array;
-                        foreach(var value in data)
+                        if( pi.Name == "SyncRoot" )
                         {
-                            PrintObject(value, componentHeader + "----", file);
+                            PrintDebugLine( "Prope: ", info.Name, componentHeader, file );
+                            Array data = pi.ReflectedType.GetProperty("SyncRoot").GetValue(thing, null) as Array;
+                            foreach( var value in data )
+                            {
+                                PrintObject( value, componentHeader + "-|--", file );
+                            }
                         }
                     }
                 }
@@ -287,7 +477,7 @@ namespace ModCommon
             }
 
             if(v == null)
-                return "null";
+                return "null"; 
 
             return JsonPrintObject(v);
         }
@@ -296,14 +486,17 @@ namespace ModCommon
         {
             try
             {
+                //TODO: look up a way to check for this assembly/use this call
+#if USING_NEWTONSOFT
+                string text = Newtonsoft.Json.JsonConvert.SerializeObject(v);
+                if( string.IsNullOrEmpty( text ) )
+                {
+                    text = JsonUtility.ToJson( v );
+                }
+#else
                 string text = JsonUtility.ToJson( v );
+#endif
                 return text;
-                //string text = Newtonsoft.Json.JsonConvert.SerializeObject(v);
-                //if(string.IsNullOrEmpty(text))
-                //{
-                //    text = JsonUtility.ToJson(v);
-                //}
-                //return text;
             }
             catch(Exception e)
             {
@@ -333,7 +526,7 @@ namespace ModCommon
             return JsonPrintObject(v);
         }
         
-        public static void PrintDebugLine(string label, string line, string componentHeader = "", StreamWriter file = null)
+        static void PrintDebugLine(string label, string line, string componentHeader = "", StreamWriter file = null)
         {
             if(file != null)
             {
