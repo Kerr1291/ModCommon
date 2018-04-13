@@ -22,8 +22,10 @@ namespace ModCommon
             return t;
         }
 
+        static List<string> parentObject = new List<string>();
+
         static BindingFlags bflags = BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Static | BindingFlags.Instance;
-        static int maxDepth = 7;
+        static int maxDepth = 3;
         static int depth = -1;
         public static void PrintObject<T>(T thing, string componentHeader = "", StreamWriter file = null)
         {
@@ -49,16 +51,33 @@ namespace ModCommon
                 if(thing as Component)
                 {
                     name = (thing as Component).gameObject.name;
+                    if( parentObject.Contains( name ))
+                    {
+                        depth--;
+                        return;
+                    }
+                    parentObject.Add( name );
                 }
                 else
                 {
                     name = (thing as MonoBehaviour).gameObject.name;
+                    if( parentObject.Contains( name ))
+                    {
+                        depth--;
+                        return;
+                    }
+                    parentObject.Add( name );
                 }
-                
                 PrintDebugLine(thing.GetType().Name+" ________________________________ ", name, componentHeader, file);
             }
             else if(thing as GameObject)
             {
+                if( parentObject.Contains( ( thing as GameObject ).name ) )
+                {
+                    depth--;
+                    return;
+                }
+                parentObject.Add( ( thing as GameObject ).name );
                 PrintDebugLine("GameObject Name: ", (thing as GameObject).name, componentHeader, file);
             }
             else
@@ -68,7 +87,8 @@ namespace ModCommon
 
             if(depth > maxDepth)
             {
-                PrintDebugLine("maxDepth REACHED. CANCELING RECURSIVE DUMP: ", depth.ToString(), componentHeader, file);
+                parentObject.RemoveAt( parentObject.Count - 1 );
+                //PrintDebugLine("maxDepth REACHED. CANCELING RECURSIVE DUMP: ", depth.ToString(), componentHeader, file);
                 depth--;
                 return;
             }
@@ -244,6 +264,7 @@ namespace ModCommon
 
 
 
+            parentObject.RemoveAt( parentObject.Count - 1 );
             depth--;
         }
 
