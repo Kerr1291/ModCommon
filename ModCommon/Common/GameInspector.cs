@@ -34,6 +34,11 @@ namespace ModCommon
         static bool isInFSM = false;
         static BindingFlags bflags = BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Static | BindingFlags.Instance;
         static int depth = -1;
+
+        ///<summary>
+        /// READ THE FULL INFO AT THE TOP OF GameInspector.cs BEFORE USING THIS FUNCTION
+        /// THIS IS INTENDED FOR AN IN-DEV ONLY DEEP DIVE OF AN OBJECT.
+        /// </summary>
         public static void PrintObject<T>(T thing, string componentHeader = "", StreamWriter file = null, bool writeProperties = false )
         {
             depth++;
@@ -102,7 +107,7 @@ namespace ModCommon
                     if(fi == null)
                         continue;
 
-                    //just skip this....
+                    //Skip these fields entirely, because we don't care about the info they contain
                     if( info.Name == "fsmList"
                          || ( info.Name == "<BecameInvisible>k__BackingField" )
                          || ( info.Name == "<BecameVisible>k__BackingField" )
@@ -185,7 +190,8 @@ namespace ModCommon
                         }
                         catch( Exception ) { }
 
-                        if((typeName == "string" )
+                        //Don't recuse into these fields
+                        if( (typeName == "string" )
                          || ( forcePrintThis )
                          || ( typeName == "HeroController" )
                          || ( typeName == "PlayerData" )
@@ -298,21 +304,18 @@ namespace ModCommon
                 {
                     foreach( PropertyInfo info in type.GetProperties( BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Static | BindingFlags.Instance ) )
                     {
-                        //don't print vector properties....
-                        if( thing.GetType().Name == "Vector2"
-                            || thing.GetType().Name == "Vector3"
-                            || thing.GetType().Name == "Bounds"
-                            || thing.GetType().Name == "Vector4" )
-                            continue;
-
                         PropertyInfo pi = info;
 
                         if( pi == null )
                             continue;
-                        
-                        //just skip this....
+
+                        //Skip these properties entirely, because we don't care about the info they contain
                         if( info.Name == "fsmList"
                              || ( info.Name == "BecameInvisible" )
+                             || thing.GetType().Name == "Vector2"
+                             || thing.GetType().Name == "Vector3"
+                             || thing.GetType().Name == "Bounds"
+                             || thing.GetType().Name == "Vector4"
                              || ( info.Name == "BecameVisible" )
                              || ( info.Name == "CollisionEnter" )
                              || ( info.Name == "CollisionExit" )
@@ -375,6 +378,7 @@ namespace ModCommon
                             }
                             catch( Exception ) { }
 
+                            //Don't recuse into these properties
                             if( ( typeName == "string" )
                              || ( forcePrintThis )
                              || ( typeName == "Transform" )

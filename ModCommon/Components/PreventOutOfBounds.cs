@@ -6,10 +6,22 @@ using UnityEngine;
 
 namespace ModCommon
 {
+    //TODO: 
+    //  rename to raycast collision interpolater/resolver or something related since that's where the behavior is going
+    //  or more correctly, split the base behavior of other collsion/other raycast into a base class and have PreventOutOfBounds inherit from that
     public class PreventOutOfBounds : MonoBehaviour
     {
         //The raycast, the object colliding, the object that it collided with
         public Action<RaycastHit2D, GameObject, GameObject> onBoundCollision;
+
+        //This collision happens only if both an "otherLayer" layermask is defined and this callback is defined.
+        //The raycast, the object colliding, the object that it collided with
+        public Action<RaycastHit2D, GameObject, GameObject> onOtherCollision;
+
+        public LayerMask boundsLayer = 8;
+        public LayerMask? otherLayer = null;
+
+        public float minCheckDistance = Mathf.Epsilon;
 
         Vector3 previousLocation;
         Rigidbody2D body;
@@ -28,10 +40,33 @@ namespace ModCommon
             Vector3 movementVector = (currentLocation - previousLocation);
             float distance = movementVector.magnitude;
 
-            if( distance <= Mathf.Epsilon )
+            if( distance <= minCheckDistance )
                 return;
+            
+            //check any custom collisions
 
-            var result = Physics2D.Raycast( previousLocation, movementVector.normalized, distance, 1 << 8 );
+            RaycastHit2D? otherHit = null;
+
+            if( otherLayer.HasValue && onOtherCollision != null && onOtherCollision.GetInvocationList().Length > 0 )
+                otherHit = Physics2D.Raycast( previousLocation, movementVector.normalized, distance, otherLayer.Value );
+
+            if( otherHit.HasValue && otherHit.Value.collider != null )
+            {
+                //we passed through something
+
+                Vector3 collisionPoint = otherHit.Value.point;
+                Vector3 collisionNormal = otherHit.Value.normal;
+
+                if( onOtherCollision != null )
+                {
+                    onOtherCollision.Invoke( otherHit.Value, gameObject, otherHit.Value.collider.gameObject );
+                }
+            }
+            
+            //resolve any collisions
+            
+            var result = Physics2D.Raycast( previousLocation, movementVector.normalized, distance, boundsLayer );
+
             if( result.collider != null )
             {
                 //somehow we passed through a wall, fix it
