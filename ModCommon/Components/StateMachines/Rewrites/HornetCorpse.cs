@@ -14,6 +14,8 @@ namespace ModCommon
 {
     public class HornetCorpse : Physics2DSM
     {
+        public HornetBoss owner;
+        
         public MeshRenderer meshRenderer;
         public tk2dSpriteAnimator tk2dAnimator;
         public ParticleSystem grassEscape;
@@ -26,9 +28,27 @@ namespace ModCommon
         public Dictionary<string, AudioClip> audioClips;
         public Dictionary<string, GameObject> gameObjects;
         public Dictionary<string, ParticleSystem> particleSystems;
+        public Dictionary<string, SpawnRandomObjectsV2Data> spawnRandomObjectsV2Data;
 
         //use for some sound effects
         public AudioSource actorAudioSource;
+
+        string objectToDestroyName;
+
+        public struct SpawnRandomObjectsV2Data
+        {
+            public GameObject gameObject;
+            public GameObject spawnPoint;
+            public Vector3? position;
+            public int? spawnMin;
+            public int? spawnMax;
+            public float? speedMin;
+            public float? speedMax;
+            public float? angleMin;
+            public float? angleMax;
+            public float? originVariationX;
+            public float? originVariationY;
+        }
 
         public override bool Running
         {
@@ -36,7 +56,6 @@ namespace ModCommon
             {
                 return gameObject.activeInHierarchy;
             }
-
             set
             {
                 gameObject.SetActive(value);
@@ -51,6 +70,7 @@ namespace ModCommon
             audioClips = new Dictionary<string, AudioClip>();
             gameObjects = new Dictionary<string, GameObject>();
             particleSystems = new Dictionary<string, ParticleSystem>();
+            spawnRandomObjectsV2Data = new Dictionary<string, SpawnRandomObjectsV2Data>();
         }
 
         protected virtual void OnCollisionStay2D(Collision2D collision)
@@ -65,26 +85,66 @@ namespace ModCommon
         {
             yield return base.Init();
 
-            nextState = LimitY;
+            nextState = LimitPos;
 
             yield break;
         }
 
-        protected virtual IEnumerator LimitY()
+        protected virtual IEnumerator LimitPos()
         {
+            //Not sure what this is for, seems to place hornet's corpse in the right spot on startup?
             nextState = SetPD;
             yield break;
         }
+
         protected virtual IEnumerator SetPD()
         {
-            nextState = Blow;
+            if(owner.checkPlayerData)
+            {
+                GameManager.instance.playerData.SetBool("hornet1Defeated", true);
+                GameManager.instance.AwardAchievement("HORNET_1");
+            }
             yield break;
         }
+
         protected virtual IEnumerator Blow()
         {
+            if(audioSnapshot != null)
+            {
+                audioSnapshot.TransitionTo(1f);
+            }
+
+            PlayOneShot(audioClips["Hornet_Fight_Death_01"]);
+            PlayOneShot(audioClips["boss_explode_clean"]);
+
+            GameObject objectToDestroy = GameObject.Find(objectToDestroyName);
+            if(objectToDestroy != null)
+            {
+                Destroy(objectToDestroy);
+            }
+            else
+            {
+                Dev.LogWarning(objectToDestroy + " is null! Cannot destroy!");
+            }
+
+            //ControlBlowSpawnRandomObjectsV2gameObject
+            SpawnRandomObjectsV2Data data0 = spawnRandomObjectsV2Data["ControlBlowSpawnRandomObjectsV2gameObject"];
+
+            //TODO: see "SpawnRandomObjectsV2Data" and implement that functionality here
+
+            //ControlBlowSpawnRandomObjectsV2gameObject1
+            SpawnRandomObjectsV2Data data1 = spawnRandomObjectsV2Data["ControlBlowSpawnRandomObjectsV2gameObject1"];
+
+            //TODO: see "SpawnRandomObjectsV2Data" and implement that functionality here
+            
+            GameObject.Instantiate<GameObject>(gameObjects["White Wave"],transform.position,Quaternion.identity);
+
+            DoCameraEffect("AverageShake");
+
             nextState = Launch;
             yield break;
         }
+
         protected virtual IEnumerator Launch()
         {
             nextState = InAir;
@@ -162,10 +222,15 @@ namespace ModCommon
 
             string bossFSMName = "Control";
 
-            yield return GetGameObjectFromCreateObjectInFSM(gameObject, bossFSMName, "Blow", SetGameObject, false);//???
+            objectToDestroyName = GetValueFromAction<string, FindGameObject>(gameObject, bossFSMName, "Blow", "objectName");
+
+            yield return GetGameObjectFromCreateObjectInFSM(gameObject, bossFSMName, "Blow", SetGameObject, false);//White Wave
             
-            yield return GetGameObjectsFromSpawnRandomObjectsV2InFSM(gameObject, bossFSMName, "Blow", SetGameObject);//???
-            yield return GetGameObjectsFromSpawnRandomObjectsV2InFSM(gameObject, bossFSMName, "Blow", SetGameObject, 1);//???
+            yield return GetValueFromAction<SpawnRandomObjectsV2Data, SpawnRandomObjectsV2>(gameObject, bossFSMName, "Blow", "gameObject", SetSpawnRandomObjectsV2DataWithName);   //ControlBlowSpawnRandomObjectsV2gameObject
+            yield return GetValueFromAction<SpawnRandomObjectsV2Data, SpawnRandomObjectsV2>(gameObject, bossFSMName, "Blow", "gameObject", SetSpawnRandomObjectsV2DataWithName, 1); //ControlBlowSpawnRandomObjectsV2gameObject1
+            //yield return GetValueFromAction<GameObject, SpawnRandomObjectsV2>(gameObject, bossFSMName, "Blow", "gameObject", SetGameObjectWithName);   //ControlBlowSpawnRandomObjectsV2gameObject
+            //yield return GetValueFromAction<GameObject, SpawnRandomObjectsV2>(gameObject, bossFSMName, "Blow", "gameObject", SetGameObjectWithName,1); //ControlBlowSpawnRandomObjectsV2gameObject1
+            //yield return GetGameObjectsFromSpawnRandomObjectsV2InFSM(gameObject, bossFSMName, "Blow", SetGameObject, 1);////ControlBlowgameObject1
             yield return GetAudioSourceFromAudioPlayerOneShotSingleInFSM(gameObject, bossFSMName, "Blow", SetActorAudioSource);
             yield return GetAudioClipFromAudioPlayerOneShotSingleInFSM(gameObject, bossFSMName, "Blow", SetAudioClip);//Hornet_Fight_Death_01
             yield return GetAudioClipFromAudioPlaySimpleInFSM(gameObject, bossFSMName, "Blow", SetAudioClip);//boss_explode_clean
@@ -199,6 +264,16 @@ namespace ModCommon
             //Destroy(fsm);
         }
 
+        protected virtual void PlayOneShotRandom(List<AudioClip> clips)
+        {
+            PlayOneShotRandom(actorAudioSource, clips);
+        }
+
+        protected virtual void PlayOneShot(AudioClip clip)
+        {
+            PlayOneShot(actorAudioSource, clip);
+        }
+
         void SetGameObject(GameObject go)
         {
             if(go == null)
@@ -209,6 +284,30 @@ namespace ModCommon
 
             Dev.Log("Added: " + go.name + " to gameObjects!");
             gameObjects.Add(go.name, go);
+        }
+
+        void SetGameObjectWithName(GameObject go, string uniqueName)
+        {
+            if(go == null)
+            {
+                Dev.Log("Warning: "+ uniqueName + " is null!");
+                return;
+            }
+
+            Dev.Log("Added: " + uniqueName + " to gameObjects!");
+            gameObjects.Add(uniqueName, go);
+        }
+
+        void SetSpawnRandomObjectsV2DataWithName(SpawnRandomObjectsV2Data data, string uniqueName)
+        {
+            if(data.gameObject == null)
+            {
+                Dev.Log("Warning: " + uniqueName + "'s prefab is null!");
+                return;
+            }
+
+            Dev.Log("Added: " + uniqueName + " data to spawnRandomObjectsV2Data!");
+            spawnRandomObjectsV2Data.Add(uniqueName, data);
         }
 
         void SetAudioClip(AudioClip clip)

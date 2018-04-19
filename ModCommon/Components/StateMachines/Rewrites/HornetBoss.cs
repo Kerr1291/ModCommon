@@ -2454,8 +2454,10 @@ namespace ModCommon
 #else
                 hornetCorpse.PrintSceneHierarchyTree( hornetCorpse.name );
 #endif
-                hornetCorpse.AddComponent<HornetCorpse>();
+                HornetCorpse corpse = hornetCorpse.AddComponent<HornetCorpse>();
+                corpse.owner = this;
             }
+
             gameObject.AddComponent<PreventOutOfBounds>();
             stunControl = gameObject.AddComponent<StunController>();
             stunControl.onStun += OnStun;

@@ -761,6 +761,10 @@ namespace ModCommon
 #endif
         }
 
+        /// <summary>
+        /// Get the exact value from the action in the state in the fsm. Use the index parameter if there's more than one of the same action in the state. Returns the found value.
+        /// Use this to get values that do not require the unity game object to be active.
+        /// </summary>
         public static T GetValueFromAction<T, U>(GameObject go, string fsmName, string stateName, string valueName, int? actionIndex = null)
             where U : FsmStateAction
         {
@@ -891,6 +895,10 @@ namespace ModCommon
             return realValue;
         }
 
+        /// <summary>
+        /// Get the exact value from the action in the state in the fsm. Use the index parameter if there's more than one of the same action in the state. Returns the found value to onValueLoaded.
+        /// Use this to get values that require the unity game object to be active. (Example: an AudioClip)
+        /// </summary>
         public static IEnumerator GetValueFromAction<T, U>(GameObject go, string fsmName, string stateName, string valueName, Action<T> onValueLoaded, int? actionIndex = null)
             where U : FsmStateAction
         {
@@ -918,6 +926,97 @@ namespace ModCommon
             yield break;
         }
 
+        /// <summary>
+        /// Get the exact value from the action in the state in the fsm. Use the index parameter if there's more than one of the same action in the state. Returns the found value and the unique name to onValueLoaded.
+        /// </summary>
+        public static IEnumerator GetValueFromAction<T, U>(GameObject go, string fsmName, string stateName, string valueName, Action<T,string> onValueLoaded, int? actionIndex = null)
+            where U : FsmStateAction
+        {
+            GameObject copy = go;
+            if(!go.activeInHierarchy)
+            {
+                copy = GameObject.Instantiate(go) as GameObject;
+                copy.SetActive(true);
+            }
+
+            //wait a few frames for the fsm to set up stuff
+            yield return new WaitForEndOfFrame();
+
+            T realValue = GetValueFromAction<T, U>(copy, fsmName, stateName, valueName, actionIndex);
+
+            string uniqueName = fsmName + stateName + typeof(U).GetType().Name + valueName;
+            if(actionIndex.HasValue)
+            {
+                uniqueName += actionIndex.Value;
+            }
+
+            //send the loaded value out
+            onValueLoaded(realValue, uniqueName);
+
+            if(copy != go)
+                GameObject.Destroy(copy);
+
+            //let stuff get destroyed
+            yield return new WaitForEndOfFrame();
+
+            yield break;
+        }
+
+        /// <summary>
+        /// This one is kinda fancy. Create an output structure with variable names that exactly match the names of variables in the fsm state.
+        /// Then, use a callback function that takes that output structure and this method will attempt to fill all the fields with data from that fsm action.
+        /// </summary>
+        public static IEnumerator GetDataFromAction<T, U>(GameObject go, string fsmName, string stateName, Action<T, string> onDataLoaded, int? actionIndex = null)
+            where U : FsmStateAction
+        {
+            GameObject copy = go;
+            if(!go.activeInHierarchy)
+            {
+                copy = GameObject.Instantiate(go) as GameObject;
+                copy.SetActive(true);
+            }
+
+            //wait a few frames for the fsm to set up stuff
+            yield return new WaitForEndOfFrame();
+
+            //get the fields on our output structure
+            FieldInfo[] fields = typeof(T).GetType().GetFields(BindingFlags.Public|BindingFlags.NonPublic|BindingFlags.Instance);
+
+            T output = Activator.CreateInstance<T>();
+
+            //use the field names to get all the requested data from this action
+            foreach(FieldInfo f in fields)
+            {
+                Type fType = f.FieldType;
+
+                //we'll use our generic method with a return value matching the field's type
+                //so we're calling this:
+                //GetValueFromAction<fType, U>(copy, fsmName, stateName, f.FieldType.Name, actionIndex)
+                MethodInfo getValueFromAction = typeof(GameStateMachine).GetMethod("GetValueFromAction"
+                    , new Type[] { typeof(GameObject), typeof(string), typeof(string), typeof(string), typeof(int?) });
+                getValueFromAction = getValueFromAction.MakeGenericMethod(new Type[] { fType, typeof(U) });
+
+                //then set the value on our output structure
+                f.SetValue(output, getValueFromAction.Invoke(copy,new object[] { copy,fsmName,stateName,f.FieldType.Name, actionIndex }));
+            }
+
+            string uniqueName = fsmName + stateName + typeof(U).GetType().Name;
+            if(actionIndex.HasValue)
+            {
+                uniqueName += actionIndex.Value;
+            }
+
+            //send the loaded value out
+            onDataLoaded(output, uniqueName);
+
+            if(copy != go)
+                GameObject.Destroy(copy);
+
+            //let stuff get destroyed
+            yield return new WaitForEndOfFrame();
+
+            yield break;
+        }
 
         //Setup functions///////////////////////////////////////////////////////////////////////////
 
