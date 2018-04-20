@@ -5,8 +5,6 @@ using System.Linq;
 using System.Text;
 using UnityEngine;
 
-using ModCommon;
-
 namespace ModCommon
 {
     //TODO: move the wake components into their own classes....

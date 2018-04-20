@@ -6,13 +6,7 @@ using System.Text;
 using System.Reflection;
 using UnityEngine;
 
-using ModCommon;
-
-#if UNITY_EDITOR
-using nv.Tests;
-#else
 using TMPro;
-#endif
 
 namespace ModCommon
 {
@@ -76,11 +70,6 @@ namespace ModCommon
         
         public bool checkPlayerData = false;
 
-#if UNITY_EDITOR
-        //stuff used by the testing framework
-        public bool tempDone = false;
-#else
-#endif
 
         //variables used by the state machine that we set here
         public float runSpeed = 8f;
@@ -474,10 +463,8 @@ namespace ModCommon
             Dev.Where();
 
             GameObject hero = HeroController.instance.gameObject;
-            if( hero.transform.position.x > gameObject.transform.position.x )
-                gameObject.transform.localScale = gameObject.transform.localScale.SetX( -1f );
-            else
-                gameObject.transform.localScale = gameObject.transform.localScale.SetX( 1f );
+            
+            SpriteFaceObjectX(gameObject, hero);
 
             airDashPause = 999f;
 
@@ -567,10 +554,8 @@ namespace ModCommon
             {
                 //face the knight
                 GameObject hero = HeroController.instance.gameObject;
-                if( hero.transform.position.x > gameObject.transform.position.x )
-                    gameObject.transform.localScale = gameObject.transform.localScale.SetX( -1f );
-                else
-                    gameObject.transform.localScale = gameObject.transform.localScale.SetX( 1f );
+                
+                SpriteFaceObjectX(gameObject, hero);
 
                 //then flip the other way
                 FlipScale(gameObject);
@@ -930,11 +915,8 @@ namespace ModCommon
             //bodyCollider.offset = new Vector2(1f, -.3f);
             //bodyCollider.size = new Vector2(1f, 2.6f);
 
-            //face the hero
-            if( hero.transform.position.x > gameObject.transform.position.x )
-                gameObject.transform.localScale = gameObject.transform.localScale.SetX( -1f );
-            else
-                gameObject.transform.localScale = gameObject.transform.localScale.SetX( 1f );
+            //face the hero            
+            SpriteFaceObjectX(gameObject, hero.gameObject);
 
             //stop moving
             body.velocity = Vector2.zero;
@@ -1039,10 +1021,8 @@ namespace ModCommon
             body.velocity = Vector2.zero;
 
             GameObject hero = HeroController.instance.gameObject;
-            if( hero.transform.position.x > gameObject.transform.position.x )
-                gameObject.transform.localScale = gameObject.transform.localScale.SetX( -1f );
-            else
-                gameObject.transform.localScale = gameObject.transform.localScale.SetX( 1f );
+            
+            SpriteFaceObjectX(gameObject, hero);
 
             //play until the callback fires and changes our state
             yield return PlayAndWaitForEndOfAnimation( "Jump Antic", KeepXVelocityZero );
@@ -1210,10 +1190,8 @@ namespace ModCommon
             if( aDashRange.ObjectIsInRange )
             {
                 GameObject hero = HeroController.instance.gameObject;
-                if( hero.transform.position.x > gameObject.transform.position.x )
-                    gameObject.transform.localScale = gameObject.transform.localScale.SetX( -1f );
-                else
-                    gameObject.transform.localScale = gameObject.transform.localScale.SetX( 1f );
+                
+                SpriteFaceObjectX(gameObject, hero);
 
                 bodyCollider.offset = new Vector2( -0.2f, -.7f );
                 bodyCollider.size = new Vector2( 1.2f, 1.4f );
@@ -1585,10 +1563,8 @@ namespace ModCommon
             body.gravityScale = 0f;
 
             GameObject hero = HeroController.instance.gameObject;
-            if( hero.transform.position.x > gameObject.transform.position.x )
-                gameObject.transform.localScale = gameObject.transform.localScale.SetX( -1f );
-            else
-                gameObject.transform.localScale = gameObject.transform.localScale.SetX( 1f );
+            
+            SpriteFaceObjectX(gameObject, hero);
 
             tk2dAnimator.AnimationCompleted = OnAnimationComplete;
             tk2dAnimator.Play( "Sphere Antic A" );
@@ -1821,10 +1797,8 @@ namespace ModCommon
             Dev.Where();
 
             GameObject hero = HeroController.instance.gameObject;
-            if( hero.transform.position.x > gameObject.transform.position.x )
-                gameObject.transform.localScale = gameObject.transform.localScale.SetX( -1f );
-            else
-                gameObject.transform.localScale = gameObject.transform.localScale.SetX( 1f );
+            
+            SpriteFaceObjectX(gameObject, hero);
 
             bodyCollider.offset = new Vector2( 0.5f, -.9f );
             bodyCollider.size = new Vector2( 1.2f, 1.4f );
@@ -2002,10 +1976,8 @@ namespace ModCommon
             bodyCollider.size = new Vector2( .9f, 2.6f );
 
             GameObject hero = HeroController.instance.gameObject;
-            if( hero.transform.position.x > gameObject.transform.position.x )
-                gameObject.transform.localScale = gameObject.transform.localScale.SetX( -1f );
-            else
-                gameObject.transform.localScale = gameObject.transform.localScale.SetX( 1f );
+            
+            SpriteFaceObjectX(gameObject, hero);
 
             PlayOneShotRandom( hornetAttackYells );
 
@@ -2066,10 +2038,8 @@ namespace ModCommon
 
                 //make her face you
                 GameObject hero = HeroController.instance.gameObject;
-                if( hero.transform.position.x > gameObject.transform.position.x )
-                    gameObject.transform.localScale = gameObject.transform.localScale.SetX( -1f );
-                else
-                    gameObject.transform.localScale = gameObject.transform.localScale.SetX( 1f );
+                
+                SpriteFaceObjectX(gameObject, hero);
 
                 //animate the evade-anticipation                
                 //play until the callback fires and changes our state
@@ -2252,10 +2222,8 @@ namespace ModCommon
 
             //face hero
             GameObject hero = HeroController.instance.gameObject;
-            if( hero.transform.position.x > gameObject.transform.position.x )
-                gameObject.transform.localScale = gameObject.transform.localScale.SetX( -1f );
-            else
-                gameObject.transform.localScale = gameObject.transform.localScale.SetX( 1f );
+            
+            SpriteFaceObjectX(gameObject, hero);
 
             float stunAirVelocity = gameObject.transform.localScale.x * stunAirXVelocity;
 
@@ -2450,10 +2418,7 @@ namespace ModCommon
             if( UnityEngine.SceneManagement.SceneManager.GetSceneByName( "Fungus1_04_boss" ).FindGameObject( "Corpse Hornet 1(Clone)" ) != null )
             {
                 hornetCorpse = UnityEngine.SceneManagement.SceneManager.GetSceneByName( "Fungus1_04_boss" ).FindGameObject( "Corpse Hornet 1(Clone)" );
-#if UNITY_EDITOR
-#else
                 hornetCorpse.PrintSceneHierarchyTree( hornetCorpse.name );
-#endif
                 HornetCorpse corpse = hornetCorpse.AddComponent<HornetCorpse>();
                 corpse.owner = this;
             }
@@ -2526,10 +2491,7 @@ namespace ModCommon
             GameObject item = UnityEngine.SceneManagement.SceneManager.GetSceneByName( "Fungus1_04" ).FindGameObject( "Shiny Item" );
             if( item != null )
             {
-#if UNITY_EDITOR
-#else
                 item.PrintSceneHierarchyTree( item.name );
-#endif
                 item.AddComponent<ShinyItem>();
             }
             //TODO: get "Grass Escape" game object for a particle effect

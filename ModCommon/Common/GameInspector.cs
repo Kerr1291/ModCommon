@@ -474,9 +474,8 @@ namespace ModCommon
             {
                 v = p.GetValue(source, pi);
             }
-            catch(Exception e)
+            catch(Exception)
             {
-                //Debug.Log(e.Message);
                 return "null";
             }
 
@@ -502,7 +501,7 @@ namespace ModCommon
 #endif
                 return text;
             }
-            catch(Exception e)
+            catch(Exception)
             {
                 return v.ToString();
             }

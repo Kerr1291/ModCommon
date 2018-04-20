@@ -4,12 +4,6 @@ using System.Collections.Generic;
 using UnityEngine;
 using HutongGames.PlayMaker.Actions;
 
-using ModCommon;
-
-#if UNITY_EDITOR
-using nv.Tests;
-#endif
-
 namespace ModCommon
 {
     public class HornetCorpse : Physics2DSM
@@ -34,22 +28,7 @@ namespace ModCommon
         public AudioSource actorAudioSource;
 
         string objectToDestroyName;
-
-        public struct SpawnRandomObjectsV2Data
-        {
-            public GameObject gameObject;
-            public GameObject spawnPoint;
-            public Vector3? position;
-            public int? spawnMin;
-            public int? spawnMax;
-            public float? speedMin;
-            public float? speedMax;
-            public float? angleMin;
-            public float? angleMax;
-            public float? originVariationX;
-            public float? originVariationY;
-        }
-
+        
         public override bool Running
         {
             get
@@ -127,17 +106,13 @@ namespace ModCommon
                 Dev.LogWarning(objectToDestroy + " is null! Cannot destroy!");
             }
 
-            //ControlBlowSpawnRandomObjectsV2gameObject
-            SpawnRandomObjectsV2Data data0 = spawnRandomObjectsV2Data["ControlBlowSpawnRandomObjectsV2gameObject"];
+            SpawnRandomObjectsV2Data data0 = spawnRandomObjectsV2Data["ControlBlowSpawnRandomObjectsV2"];
+            DoSpawnRandomObjectsV2(body, data0);
 
-            //TODO: see "SpawnRandomObjectsV2Data" and implement that functionality here
+            SpawnRandomObjectsV2Data data1 = spawnRandomObjectsV2Data["ControlBlowSpawnRandomObjectsV21"];
+            DoSpawnRandomObjectsV2(body, data1);
 
-            //ControlBlowSpawnRandomObjectsV2gameObject1
-            SpawnRandomObjectsV2Data data1 = spawnRandomObjectsV2Data["ControlBlowSpawnRandomObjectsV2gameObject1"];
-
-            //TODO: see "SpawnRandomObjectsV2Data" and implement that functionality here
-            
-            GameObject.Instantiate<GameObject>(gameObjects["White Wave"],transform.position,Quaternion.identity);
+            GameObject.Instantiate<GameObject>(gameObjects["White Wave"], transform.position, Quaternion.identity);
 
             DoCameraEffect("AverageShake");
 
@@ -147,6 +122,11 @@ namespace ModCommon
 
         protected virtual IEnumerator Launch()
         {
+            GameObject hero = HeroController.instance.gameObject;
+
+            SpriteFaceObjectX(gameObject, hero);
+
+
             nextState = InAir;
             yield break;
         }
@@ -226,8 +206,8 @@ namespace ModCommon
 
             yield return GetGameObjectFromCreateObjectInFSM(gameObject, bossFSMName, "Blow", SetGameObject, false);//White Wave
             
-            yield return GetValueFromAction<SpawnRandomObjectsV2Data, SpawnRandomObjectsV2>(gameObject, bossFSMName, "Blow", "gameObject", SetSpawnRandomObjectsV2DataWithName);   //ControlBlowSpawnRandomObjectsV2gameObject
-            yield return GetValueFromAction<SpawnRandomObjectsV2Data, SpawnRandomObjectsV2>(gameObject, bossFSMName, "Blow", "gameObject", SetSpawnRandomObjectsV2DataWithName, 1); //ControlBlowSpawnRandomObjectsV2gameObject1
+            yield return GetDataFromAction<SpawnRandomObjectsV2Data, SpawnRandomObjectsV2>(gameObject, bossFSMName, "Blow", SetSpawnRandomObjectsV2DataWithName);   //ControlBlowSpawnRandomObjectsV2
+            yield return GetDataFromAction<SpawnRandomObjectsV2Data, SpawnRandomObjectsV2>(gameObject, bossFSMName, "Blow", SetSpawnRandomObjectsV2DataWithName, 1); //ControlBlowSpawnRandomObjectsV21
             //yield return GetValueFromAction<GameObject, SpawnRandomObjectsV2>(gameObject, bossFSMName, "Blow", "gameObject", SetGameObjectWithName);   //ControlBlowSpawnRandomObjectsV2gameObject
             //yield return GetValueFromAction<GameObject, SpawnRandomObjectsV2>(gameObject, bossFSMName, "Blow", "gameObject", SetGameObjectWithName,1); //ControlBlowSpawnRandomObjectsV2gameObject1
             //yield return GetGameObjectsFromSpawnRandomObjectsV2InFSM(gameObject, bossFSMName, "Blow", SetGameObject, 1);////ControlBlowgameObject1
