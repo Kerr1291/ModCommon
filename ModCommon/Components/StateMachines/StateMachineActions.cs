@@ -13,7 +13,7 @@ namespace ModCommon
 {
     public abstract partial class GameStateMachine
     {
-        public struct SpawnRandomObjectsV2Data
+        protected struct SpawnRandomObjectsV2Data
         {
             public GameObject gameObject;
             public GameObject spawnPoint;
@@ -160,7 +160,7 @@ namespace ModCommon
                 sprite.AnimationCompleted = null;
         }
 
-        static public void PlayOneShot(AudioSource source, AudioClip clip)
+        static protected void PlayOneShot(AudioSource source, AudioClip clip)
         {
             if(source != null && clip != null)
             {
@@ -175,7 +175,7 @@ namespace ModCommon
             }
         }
 
-        static public void PlayOneShotRandom(AudioSource source, List<AudioClip> clip)
+        static protected void PlayOneShotRandom(AudioSource source, List<AudioClip> clip)
         {
             if(source != null && clip != null && clip.Count > 0)
             {
@@ -193,7 +193,7 @@ namespace ModCommon
             }
         }
 
-        static public void ShowBossTitle(MonoBehaviour owner, GameObject areaTitleObject, float hideInSeconds, string largeMain = "", string largeSuper = "", string largeSub = "", string smallMain = "", string smallSuper = "", string smallSub = "")
+        static protected void ShowBossTitle(MonoBehaviour owner, GameObject areaTitleObject, float hideInSeconds, string largeMain = "", string largeSuper = "", string largeSub = "", string smallMain = "", string smallSuper = "", string smallSub = "")
         {
             //show hornet title
             if(areaTitleObject != null)
@@ -229,7 +229,7 @@ namespace ModCommon
             }
         }
 
-        static public IEnumerator HideBossTitleAfter(GameObject areaTitleObject, float time)
+        static protected IEnumerator HideBossTitleAfter(GameObject areaTitleObject, float time)
         {
             yield return new WaitForSeconds(time);
             HideBossTitle(areaTitleObject);
@@ -237,7 +237,7 @@ namespace ModCommon
             areaTitleObject.SetActive(false);
         }
 
-        static public void HideBossTitle(GameObject areaTitleObject)
+        static protected void HideBossTitle(GameObject areaTitleObject)
         {
             //show title
             if(areaTitleObject != null && areaTitleObject.activeInHierarchy)
@@ -316,7 +316,7 @@ namespace ModCommon
             }
         }
 
-        public static void SpriteFaceObjectX(GameObject gameObject, GameObject target, bool rightIsNegative = true)
+        protected static void SpriteFaceObjectX(GameObject gameObject, GameObject target, bool rightIsNegative = true)
         {
             //by default we'll set it to facing right
             float previousScale = gameObject.transform.localScale.x;
@@ -331,7 +331,7 @@ namespace ModCommon
             gameObject.transform.localScale = gameObject.transform.localScale.SetX(newX);
         }
 
-        public static IEnumerator GetAudioPlayRandomClipsFromFSM(GameObject go, string fsmName, string stateName, Action<List<AudioClip>> onAudioPlayRandomLoaded)
+        protected static IEnumerator GetAudioPlayRandomClipsFromFSM(GameObject go, string fsmName, string stateName, Action<List<AudioClip>> onAudioPlayRandomLoaded)
         {
             GameObject copy = go;
             if(!go.activeInHierarchy)
@@ -359,7 +359,7 @@ namespace ModCommon
             yield break;
         }
 
-        public static IEnumerator GetAudioPlayerOneShotClipsFromFSM(GameObject go, string fsmName, string stateName, Action<List<AudioClip>> onAudioPlayerOneShotLoaded)
+        protected static IEnumerator GetAudioPlayerOneShotClipsFromFSM(GameObject go, string fsmName, string stateName, Action<List<AudioClip>> onAudioPlayerOneShotLoaded)
         {
             GameObject copy = go;
             if(!go.activeInHierarchy)
@@ -387,7 +387,7 @@ namespace ModCommon
         }
 
 
-        public static IEnumerator GetGameObjectFromSpawnObjectFromGlobalPoolInFSM(GameObject go, string fsmName, string stateName, Action<GameObject> onGameObjectLoaded, bool returnCopyOfPrefab)
+        protected static IEnumerator GetGameObjectFromSpawnObjectFromGlobalPoolInFSM(GameObject go, string fsmName, string stateName, Action<GameObject> onGameObjectLoaded, bool returnCopyOfPrefab)
         {
             GameObject copy = go;
             if(!go.activeInHierarchy)
@@ -424,7 +424,7 @@ namespace ModCommon
             yield break;
         }
 
-        public static IEnumerator GetGameObjectsFromSpawnRandomObjectsV2InFSM(GameObject go, string fsmName, string stateName, Action<GameObject> onGameObjectLoaded, int? actionIndex = null)
+        protected static IEnumerator GetGameObjectsFromSpawnRandomObjectsV2InFSM(GameObject go, string fsmName, string stateName, Action<GameObject> onGameObjectLoaded, int? actionIndex = null)
         {
             GameObject copy = go;
             if(!go.activeInHierarchy)
@@ -457,7 +457,7 @@ namespace ModCommon
             yield break;
         }
 
-        public static IEnumerator GetGameObjectFromCreateObjectInFSM(GameObject go, string fsmName, string stateName, Action<GameObject> onGameObjectLoaded, bool returnCopyOfPrefab)
+        protected static IEnumerator GetGameObjectFromCreateObjectInFSM(GameObject go, string fsmName, string stateName, Action<GameObject> onGameObjectLoaded, bool returnCopyOfPrefab)
         {
             GameObject copy = go;
             if(!go.activeInHierarchy)
@@ -494,7 +494,7 @@ namespace ModCommon
             yield break;
         }
 
-        public static IEnumerator GetGameObjectFromFSM(GameObject go, string fsmName, string stateName, Action<GameObject> onGameObjectLoaded)
+        protected static IEnumerator GetGameObjectFromFSM(GameObject go, string fsmName, string stateName, Action<GameObject> onGameObjectLoaded)
         {
             GameObject copy = go;
             if(!go.activeInHierarchy)
@@ -525,7 +525,7 @@ namespace ModCommon
         }
 
 
-        public static IEnumerator GetGameObjectFromSendEvent(GameObject go, string fsmName, string stateName, Action<GameObject> onGameObjectLoaded, bool returnCopyOfObject)
+        protected static IEnumerator GetGameObjectFromSendEvent(GameObject go, string fsmName, string stateName, Action<GameObject> onGameObjectLoaded, bool returnCopyOfObject)
         {
             GameObject copy = go;
             if(!go.activeInHierarchy)
@@ -564,7 +564,7 @@ namespace ModCommon
             yield break;
         }
 
-        public static IEnumerator GetAudioSourceFromAudioPlayerOneShotSingleInFSM(GameObject go, string fsmName, string stateName, Action<AudioSource> onSourceLoaded)
+        protected static IEnumerator GetAudioSourceFromAudioPlayerOneShotSingleInFSM(GameObject go, string fsmName, string stateName, Action<AudioSource> onSourceLoaded)
         {
             Dev.Where();
             GameObject copy = go;
@@ -604,7 +604,7 @@ namespace ModCommon
             yield break;
         }
 
-        public static IEnumerator GetAudioClipFromAudioPlaySimpleInFSM(GameObject go, string fsmName, string stateName, Action<AudioClip> onClipLoaded)
+        protected static IEnumerator GetAudioClipFromAudioPlaySimpleInFSM(GameObject go, string fsmName, string stateName, Action<AudioClip> onClipLoaded)
         {
             GameObject copy = go;
             if(!go.activeInHierarchy)
@@ -630,7 +630,7 @@ namespace ModCommon
             yield break;
         }
 
-        public static IEnumerator GetAudioClipFromAudioPlayerOneShotSingleInFSM(GameObject go, string fsmName, string stateName, Action<AudioClip> onClipLoaded, int? actionIndex = null)
+        protected static IEnumerator GetAudioClipFromAudioPlayerOneShotSingleInFSM(GameObject go, string fsmName, string stateName, Action<AudioClip> onClipLoaded, int? actionIndex = null)
         {
             Dev.Where();
             GameObject copy = go;
@@ -665,12 +665,12 @@ namespace ModCommon
         }
 
 
-        public static UnityEngine.Audio.AudioMixerSnapshot GetSnapshotFromTransitionToAudioSnapshotInFSM(GameObject go, string fsmName, string stateName)
+        protected static UnityEngine.Audio.AudioMixerSnapshot GetSnapshotFromTransitionToAudioSnapshotInFSM(GameObject go, string fsmName, string stateName)
         {
             return GetValueFromAction<UnityEngine.Audio.AudioMixerSnapshot, TransitionToAudioSnapshot>(go, fsmName, stateName, "snapshot");
         }
 
-        public static MusicCue GetMusicCueFromFSM(GameObject go, string fsmName, string stateName)
+        protected static MusicCue GetMusicCueFromFSM(GameObject go, string fsmName, string stateName)
         {
             return GetValueFromAction<MusicCue, ApplyMusicCue>(go, fsmName, stateName, "musicCue");
         }
@@ -679,7 +679,7 @@ namespace ModCommon
         /// Get the exact value from the action in the state in the fsm. Use the index parameter if there's more than one of the same action in the state. Returns the found value.
         /// Use this to get values that do not require the unity game object to be active.
         /// </summary>
-        public static T GetValueFromAction<T, U>(GameObject go, string fsmName, string stateName, string valueName, int? actionIndex = null)
+        protected static T GetValueFromAction<T, U>(GameObject go, string fsmName, string stateName, string valueName, int? actionIndex = null)
             where U : FsmStateAction
         {
             List<U> actions = go.GetFSMActionsOnState<U>(stateName, fsmName);
@@ -810,7 +810,7 @@ namespace ModCommon
         /// Get the exact value from the action in the state in the fsm. Use the index parameter if there's more than one of the same action in the state. Returns the found value to onValueLoaded.
         /// Use this to get values that require the unity game object to be active. (Example: an AudioClip)
         /// </summary>
-        public static IEnumerator GetValueFromAction<T, U>(GameObject go, string fsmName, string stateName, string valueName, Action<T> onValueLoaded, int? actionIndex = null)
+        protected static IEnumerator GetValueFromAction<T, U>(GameObject go, string fsmName, string stateName, string valueName, Action<T> onValueLoaded, int? actionIndex = null)
             where U : FsmStateAction
         {
             GameObject copy = go;
@@ -842,7 +842,7 @@ namespace ModCommon
         /// The callback number recieves the name in this format: fsmName + stateName + actionTypeName + valueName + (if not null) actionIndex
         /// Example: For The FSM "Control", The state "Blow" the action "SpawnRandomObjectsV2" the valueName "gameObject" and actionIndex as null, the name will be ControlBlowSpawnRandomObjectsV2gameObject
         /// </summary>
-        public static IEnumerator GetValueFromAction<T, U>(GameObject go, string fsmName, string stateName, string valueName, Action<T, string> onValueLoaded, int? actionIndex = null)
+        protected static IEnumerator GetValueFromAction<T, U>(GameObject go, string fsmName, string stateName, string valueName, Action<T, string> onValueLoaded, int? actionIndex = null)
             where U : FsmStateAction
         {
             GameObject copy = go;
@@ -881,7 +881,7 @@ namespace ModCommon
         /// The callback number recieves the name in this format: fsmName + stateName + actionTypeName + (if not null) actionIndex
         /// Example: For The FSM "Control", The state "Blow" the action "SpawnRandomObjectsV2" and actionIndex as null, the name will be ControlBlowSpawnRandomObjectsV2
         /// </summary>
-        public static IEnumerator GetDataFromAction<T, U>(GameObject go, string fsmName, string stateName, Action<T, string> onDataLoaded, int? actionIndex = null)
+        protected static IEnumerator GetDataFromAction<T, U>(GameObject go, string fsmName, string stateName, Action<T, string> onDataLoaded, int? actionIndex = null)
             where U : FsmStateAction
         {
             GameObject copy = go;

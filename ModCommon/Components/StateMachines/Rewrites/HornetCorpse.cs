@@ -22,7 +22,7 @@ namespace ModCommon
         public Dictionary<string, AudioClip> audioClips;
         public Dictionary<string, GameObject> gameObjects;
         public Dictionary<string, ParticleSystem> particleSystems;
-        public Dictionary<string, SpawnRandomObjectsV2Data> spawnRandomObjectsV2Data;
+        protected Dictionary<string, SpawnRandomObjectsV2Data> spawnRandomObjectsV2Data;
 
         //use for some sound effects
         public AudioSource actorAudioSource;
@@ -211,6 +211,8 @@ namespace ModCommon
             //yield return GetValueFromAction<GameObject, SpawnRandomObjectsV2>(gameObject, bossFSMName, "Blow", "gameObject", SetGameObjectWithName);   //ControlBlowSpawnRandomObjectsV2gameObject
             //yield return GetValueFromAction<GameObject, SpawnRandomObjectsV2>(gameObject, bossFSMName, "Blow", "gameObject", SetGameObjectWithName,1); //ControlBlowSpawnRandomObjectsV2gameObject1
             //yield return GetGameObjectsFromSpawnRandomObjectsV2InFSM(gameObject, bossFSMName, "Blow", SetGameObject, 1);////ControlBlowgameObject1
+
+
             yield return GetAudioSourceFromAudioPlayerOneShotSingleInFSM(gameObject, bossFSMName, "Blow", SetActorAudioSource);
             yield return GetAudioClipFromAudioPlayerOneShotSingleInFSM(gameObject, bossFSMName, "Blow", SetAudioClip);//Hornet_Fight_Death_01
             yield return GetAudioClipFromAudioPlaySimpleInFSM(gameObject, bossFSMName, "Blow", SetAudioClip);//boss_explode_clean
