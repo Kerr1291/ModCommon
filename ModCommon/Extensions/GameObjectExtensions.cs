@@ -83,7 +83,12 @@ namespace ModCommon
 
             return objStr;
         }
-        
+
+        public static void PrintSceneHierarchyTree( this GameObject gameObject )
+        {
+            gameObject.PrintSceneHierarchyTree( gameObject.name );
+        }
+
         public static void PrintSceneHierarchyTree( this GameObject gameObject, string fileName )
         {
             System.IO.StreamWriter file = null;

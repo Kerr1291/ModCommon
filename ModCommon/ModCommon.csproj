@@ -85,6 +85,7 @@
     <Compile Include="Components\StateMachines\Rewrites\ShinyItem.cs" />
     <Compile Include="Components\StateMachines\Rewrites\SphereBall.cs" />
     <Compile Include="Components\StateMachines\Rewrites\StunController.cs" />
+    <Compile Include="Components\StateMachines\StateMachineActions.cs" />
     <Compile Include="Components\StateMachines\TemplateSM.cs" />
     <Compile Include="Components\StateMachines\Rewrites\ThrowEffect.cs" />
     <Compile Include="ModCommon.cs" />
