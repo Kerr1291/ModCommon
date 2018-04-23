@@ -160,11 +160,11 @@ namespace ModCommon
                 sprite.AnimationCompleted = null;
         }
 
-        static protected void PlayOneShot(AudioSource source, AudioClip clip)
+        static protected void PlayOneShot(AudioSource source, AudioClip clip, float volume = 1f)
         {
             if(source != null && clip != null)
             {
-                source.PlayOneShot(clip);
+                source.PlayOneShot(clip, volume);
             }
             else
             {

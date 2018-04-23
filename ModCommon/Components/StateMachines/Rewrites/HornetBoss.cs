@@ -1145,7 +1145,7 @@ namespace ModCommon
             }
 
             //restore collision check directions
-            EnableCollisionsInDirection( false, false, true, true );
+            RestorePreviousCollisionDirections();
 
             yield break;
         }
@@ -1275,8 +1275,6 @@ namespace ModCommon
 
             returnXScale = 1f;
 
-            ClearPreviousCollisions();
-
             //change collision check directions for air dashing
             EnableCollisionsInDirection( true, true, true, false );
 
@@ -1292,8 +1290,6 @@ namespace ModCommon
             returnXScale = -1f;
 
             gameObject.transform.localScale = gameObject.transform.localScale.SetY( -1f );
-
-            ClearPreviousCollisions();
 
             //change collision check directions for air dashing
             EnableCollisionsInDirection( true, true, false, true );
@@ -1324,29 +1320,23 @@ namespace ModCommon
                 //lock the velocity for the duration of the dash
                 body.velocity = aDashVelocity;
 
-                //added this in to keep hornet from clipping into walls
-                var nextFrame = GetCollisionAlongCurrentVelocity(8,Time.deltaTime * 4f);
-
-                Dev.Log( "next frame collisions (local checking):" + bottomHit + " " + rightHit + " " + leftHit + " " + topHit );
-                Dev.Log( "next frame collisions (my checking):" + nextFrame.below + " " + nextFrame.above + " " + nextFrame.left + " " + nextFrame.right );
-
                 //did we hit a wall? end evade timer early
-                if( bottomHit || nextFrame.below )
+                if( bottomHit )
                 {
                     nextState = LandY;
                     break;
                 }
-                if( topHit || nextFrame.above )
+                if( topHit )
                 {
                     nextState = HitRoof;
                     break;
                 }
-                if( leftHit || nextFrame.left )
+                if( leftHit )
                 {
                     nextState = WallL;
                     break;
                 }
-                if( rightHit || nextFrame.right )
+                if( rightHit )
                 {
                     nextState = WallR;
                     break;
@@ -1354,7 +1344,7 @@ namespace ModCommon
             }
 
             //restore collision check directions
-            EnableCollisionsInDirection( false, false, true, true );
+            RestorePreviousCollisionDirections();
 
             if( nextState == null )
                 nextState = LandY;
@@ -2265,7 +2255,7 @@ namespace ModCommon
             }
 
             //restore collision check directions
-            EnableCollisionsInDirection( false, false, true, true );
+            RestorePreviousCollisionDirections();
 
             yield break;
         }

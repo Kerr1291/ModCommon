@@ -25,6 +25,11 @@ namespace ModCommon
         public bool checkLeft = true;
         public bool checkRight = true;
 
+        bool previousCheckUp = false;
+        bool previousCheckDown = false;
+        bool previousCheckLeft = true;
+        bool previousCheckRight = true;
+
         //current status of collisions
         protected bool topHit = false;
         protected bool rightHit = false;
@@ -86,6 +91,11 @@ namespace ModCommon
 
         protected virtual void EnableCollisionsInDirection(bool up, bool down, bool left, bool right)
         {
+            previousCheckUp = checkUp;
+            previousCheckDown = checkDown;
+            previousCheckLeft = checkLeft;
+            previousCheckRight = checkRight;
+
             checkUp = up;
             checkDown = down;
             checkLeft = left;
@@ -100,6 +110,9 @@ namespace ModCommon
                 leftHit = false;
             if(!right)
                 rightHit = false;
+
+            //clear any collisions that have happened recently to be sure that we're not saving state for any collision that happened in a now-inactive direction
+            ClearPreviousCollisions();
         }
 
         protected virtual void ClearPreviousCollisions()
@@ -108,6 +121,14 @@ namespace ModCommon
             bottomHit = false;
             leftHit = false;
             rightHit = false;
+        }
+
+        protected virtual void RestorePreviousCollisionDirections()
+        {
+            checkUp = previousCheckUp;
+            checkDown = previousCheckDown;
+            checkLeft = previousCheckLeft;
+            checkRight = previousCheckRight;
         }
 
         protected virtual CollisionDirection GetCollisionAlongCurrentVelocity(LayerMask layer, float timeStep)
@@ -364,6 +385,73 @@ namespace ModCommon
             velocity.x = x;
             velocity.y = y;
             return velocity;
+        }
+
+        ///get a raycast in the given direction. Null raycastMask defaults to the ground collision layer (8)
+        static protected RaycastHit2D GetRaycastInDirection(Vector2 origin, Vector2 directionA, LayerMask? raycastMask = null)
+        {
+            Vector2 testDirection = directionA.normalized;
+
+            if(raycastMask == null || !raycastMask.HasValue)
+            {
+                raycastMask = (1 << 8);
+            }
+
+            RaycastHit2D testRaycast = Physics2D.Raycast(origin, testDirection, Mathf.Infinity, raycastMask.Value);
+
+            return testRaycast;
+        }
+
+        ///get the closer of the two collision points along the given rays. Null raycastMask defaults to the ground collision layer (8)
+        static protected RaycastHit2D? GetRaycastWithMinDistance(Vector2 origin, Vector2 directionA, Vector2 directionB, LayerMask? raycastMask = null)
+        {
+            RaycastHit2D testRaycastA = GetRaycastInDirection(origin, directionA, raycastMask);
+            RaycastHit2D testRaycastB = GetRaycastInDirection(origin, directionB, raycastMask);
+
+            if(testRaycastA.collider == null && testRaycastB.collider == null)
+            {
+                //error!
+                Dev.LogError("Both raycasts returned null! Collision point was found in either direction! (Likely a bad layermask or origin point)");
+                return null;
+            }
+            else if(testRaycastA.collider == null)
+            {
+                return testRaycastB;
+            }
+            else if(testRaycastB.collider == null)
+            {
+                return testRaycastA;
+            }
+
+            if(testRaycastA.distance < testRaycastB.distance)
+                return testRaycastA;
+            return testRaycastB;
+        }
+
+        ///get the farther of the two collision points along the given rays. Null raycastMask defaults to the ground collision layer (8)
+        static protected RaycastHit2D? GetRaycastWithMaxDistance(Vector2 origin, Vector2 directionA, Vector2 directionB, LayerMask? raycastMask = null)
+        {
+            RaycastHit2D testRaycastA = GetRaycastInDirection(origin, directionA, raycastMask);
+            RaycastHit2D testRaycastB = GetRaycastInDirection(origin, directionB, raycastMask);
+
+            if(testRaycastA.collider == null && testRaycastB.collider == null)
+            {
+                //error!
+                Dev.LogError("Both raycasts returned null! Collision point was found in either direction! (Likely a bad layermask or origin point)");
+                return null;
+            }
+            else if(testRaycastA.collider == null)
+            {
+                return testRaycastB;
+            }
+            else if(testRaycastB.collider == null)
+            {
+                return testRaycastA;
+            }
+
+            if(testRaycastA.distance > testRaycastB.distance)
+                return testRaycastA;
+            return testRaycastB;
         }
     }
 }
