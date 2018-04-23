@@ -226,7 +226,23 @@ namespace ModCommon
 
             leaveAnim.Play("Jump Full");
 
-            yield return new WaitForSeconds(hornetLeaveJumpWaitTime);
+            //TODO: use iTweenMoveBy to jump into the air, in the meantime, I will create a temporary jump animation using smoothdamp
+            float distanceToEscape = (startPt.transform.position - transform.position).magnitude;
+
+            //calculate the new escape point farther away (inside the wall)
+            Vector3 escapePoint = startPt.transform.position;
+            Vector3 escapeVelocity = Vector3.zero;
+
+            float waitTime = hornetLeaveJumpWaitTime;
+
+            //smoothdamp to that position
+            while(waitTime > 0f)
+            {
+                yield return new WaitForEndOfFrame();
+                transform.position = Vector3.SmoothDamp(transform.position, escapePoint, ref escapeVelocity, hornetLeaveJumpWaitTime, escapeSpeed, Time.deltaTime);
+                distanceToEscape = (escapePoint - transform.position).magnitude;
+                waitTime -= Time.deltaTime;
+            }
 
             nextState = ThrowStart;
             yield break;
