@@ -306,6 +306,7 @@ namespace ModCommon
             nextState = End;
             yield break;
         }
+
         protected virtual IEnumerator End()
         {
             DoEnemyKillShakeEffect();

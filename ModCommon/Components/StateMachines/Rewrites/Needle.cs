@@ -23,6 +23,10 @@ namespace ModCommon
         IEnumerator currentState = null;
 
         public bool isAnimating = false;
+        protected LayerMask collisionLayer = 8;
+
+        public bool canHitWalls = false;
+        public bool HitWall { get; private set; }
 
         float startDelay;
         float throwMaxTravelTime;
@@ -53,6 +57,7 @@ namespace ModCommon
             thread = gameObject.FindGameObjectInChildren( "Thread" );
 
             isAnimating = true;
+            HitWall = false;
 
             this.startDelay = startDelay;
             this.throwMaxTravelTime = throwMaxTravelTime;
@@ -97,12 +102,16 @@ namespace ModCommon
 
             Vector2 throwTarget = throwRay.direction * throwDistance;
 
-            Vector3 throwDirection = ((Vector3)throwTarget + throwRay.origin) - transform.position;
-            if( throwDirection != Vector3.zero )
-            {
-                float angle = Mathf.Atan2(throwDirection.y, throwDirection.x) * Mathf.Rad2Deg;
-                transform.rotation = Quaternion.AngleAxis( angle + 180f, Vector3.forward );
-            }
+            //needle requires a 180 flip to orient properly
+            float angleToTarget = GetAngleToTarget(startPos, throwTarget, 0f, -.5f);
+            transform.rotation = Quaternion.AngleAxis(angleToTarget + 180f, Vector3.forward);
+
+            //Vector3 throwDirection = ((Vector3)throwTarget + throwRay.origin) - transform.position;
+            //if( throwDirection != Vector3.zero )
+            //{
+            //    float angle = Mathf.Atan2(throwDirection.y, throwDirection.x) * Mathf.Rad2Deg;
+            //    transform.rotation = Quaternion.AngleAxis( angle + 180f, Vector3.forward );
+            //}
 
             AnimationCurve throwCurve = new AnimationCurve();
             throwCurve.AddKey( 0f, 0f );
@@ -122,6 +131,11 @@ namespace ModCommon
 
             while( time < throwTime )
             {
+                if(canHitWalls && HitWall)
+                {
+                    break;
+                }
+
                 float t = time/throwTime;
 
                 transform.position = throwCurve.Evaluate( t ) * (Vector3)throwTarget + startPos;
@@ -130,7 +144,23 @@ namespace ModCommon
                 yield return new WaitForFixedUpdate();
             }
 
-            currentState = Return();
+            if(canHitWalls && HitWall)
+            {
+                currentState = CompleteFromHitWall();
+            }
+            else
+            {
+                currentState = Return();
+            }
+
+            yield break;
+        }
+
+        IEnumerator CompleteFromHitWall()
+        {
+            Dev.Where();
+
+            isAnimating = false;
 
             yield break;
         }
@@ -183,6 +213,28 @@ namespace ModCommon
             gameObject.SetActive( false );
 
             yield break;
+        }
+
+        static protected float GetAngleToTarget(Vector2 origin, Vector2 target, float offsetX, float offsetY)
+        {
+            float num = target.y + offsetY - origin.y;
+            float num2 = target.x + offsetX - origin.x;
+            float num3;
+            for(num3 = Mathf.Atan2(num, num2) * 57.2957764f; num3 < 0f; num3 += 360f)
+            {
+            }
+            return num3;
+        }
+
+        protected virtual void OnCollisionEnter2D(Collision2D collision)
+        {
+            if(!isAnimating)
+                return;
+
+            if(collision.gameObject.layer == collisionLayer)
+            {
+                HitWall = true;
+            }
         }
     }
 }

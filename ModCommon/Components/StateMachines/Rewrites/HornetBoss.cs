@@ -954,12 +954,12 @@ namespace ModCommon
             bodyCollider.offset = new Vector2( .1f, -1.0f );
             bodyCollider.size = new Vector2( 1.4f, 1.2f );
 
+            //put the needle tink on the needle
+            needleTink.SetParent(needle.transform);
+
             //start throwing the needle
             DoThrowNeedle();
-
-            //put the needle tink on the needle
-            needleTink.SetParent( needle.transform );
-
+            
             //start the throw animation
             PlayAnimation( "Throw" );
 

@@ -347,12 +347,16 @@ namespace ModCommon
 
             return direction;
         }
-
-        //TODO: change to a static function that takes 3 vectors, origin, target, and offsets
+        
         static protected float GetAngleToTarget(GameObject self, GameObject target, float offsetX, float offsetY)
         {
-            float num = target.transform.position.y + offsetY - self.transform.position.y;
-            float num2 = target.transform.position.x + offsetX - self.transform.position.x;
+            return GetAngleToTarget(self.transform.position, target.transform.position, new Vector2(offsetX, offsetY));
+        }
+
+        static protected float GetAngleToTarget(Vector2 origin, Vector2 target, Vector2 offset)
+        {
+            float num = target.y + offset.y - origin.y;
+            float num2 = target.x + offset.x - origin.x;
             float num3;
             for(num3 = Mathf.Atan2(num, num2) * 57.2957764f; num3 < 0f; num3 += 360f)
             {

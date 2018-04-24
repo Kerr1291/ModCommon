@@ -20,6 +20,8 @@ namespace ModCommon
         public float evadeRangeCooldownMod = .1f;
         public float runSpeedMod = 2f;
         public float runWaitMod = .1f;
+        public float grappleMaxVelocity = 44f;
+        public float grappleTime = .25f;
 
         public int needleDamage = 2;
 
@@ -75,16 +77,13 @@ namespace ModCommon
             throwWindUpTime *= throwWindUpMod;
             throwMaxTravelTime *= throwMaxTravelTimeMod;
 
+            throwDistance = 24f;
+
             needle.GetComponent<DamageHero>().damageDealt = needleDamage;
 
             stunControl.maxStuns = 12;
 
             yield break;
-        }
-
-        protected override void DoThrowNeedle()
-        {
-            needle.Play(gameObject, throwWindUpTime, throwMaxTravelTime, throwRay, throwDistance);
         }
 
         protected override void SelectNextStateFromIdle()
@@ -161,6 +160,114 @@ namespace ModCommon
                 //we can throw!
                 nextState = MoveChoiceA;
             }
+
+            yield break;
+        }
+
+        protected override void DoThrowNeedle()
+        {
+            needle.canHitWalls = true;
+            needle.Play(gameObject, throwWindUpTime, throwMaxTravelTime, throwRay, throwDistance);
+        }
+
+        protected override IEnumerator Thrown()
+        {
+            Dev.Where();
+
+            //wait while the needle does its thing (boomerang effect)
+            while(needle.isAnimating)
+            {
+                yield return new WaitForEndOfFrame();
+            }
+
+            if(needle.HitWall)
+            {
+                nextState = Grapple;
+            }
+            else
+            {
+                nextState = ThrowRecover;
+            }
+
+            yield break;
+        }
+
+        protected virtual IEnumerator Grapple()
+        {
+            EnableCollisionsInDirection(true, false, true, true);
+
+            PlayOneShotRandom(hornetJumpYells);
+
+            //orient hornet at the spot
+            float grappleRotation = GetAngleToTarget(gameObject, needle.gameObject, 0f, 0f);
+            Vector3 grappleRotationVector = new Vector3(0f, 0f, grappleRotation);
+            transform.Rotate(grappleRotationVector);
+
+            //use the air dash zoom effect
+            aDashEffect.Play(gameObject);
+
+            PlayOneShot(hornetDashSFX);
+
+            //shake the screen for dramatic effect
+            DoEnemyKillShakeEffect();
+
+            //get the grapple clip
+            tk2dSpriteAnimationClip grappleClip =
+                hornetCorpse.GetComponent<HornetCorpse>().leaveAnim.GetClipByName("Harpoon Side");
+
+            //play it
+            PlayAnimation(grappleClip);
+
+            //make hornet zoom away
+            //get the escape direction and add some distance one so the smoothdamp finishes inside the wall
+            float distanceToGrapple = (needle.transform.position - transform.position).magnitude + 10f;
+
+            //calculate the new escape point farther away (inside the wall)
+            Vector3 grapplePoint = ((needle.transform.position - transform.position)).normalized * (distanceToGrapple);
+            Vector3 grappleVelocity = Vector3.zero;
+
+            while(!rightHit && !leftHit && !topHit)
+            {
+                yield return new WaitForEndOfFrame();
+
+                body.velocity = Vector2.zero;
+
+                //lock the velocity for the duration of the dash
+                transform.position = Vector3.SmoothDamp(transform.position, grapplePoint, ref grappleVelocity, grappleTime, grappleMaxVelocity, Time.deltaTime);
+                distanceToGrapple = (grapplePoint - transform.position).magnitude;
+
+                //did we hit a wall? end evade timer early
+                if(topHit)
+                {
+                    nextState = HitRoof;
+                    break;
+                }
+                if(leftHit)
+                {
+                    nextState = WallL;
+                    break;
+                }
+                if(rightHit)
+                {
+                    nextState = WallR;
+                    break;
+                }
+            }
+
+            //restore collision check directions
+            RestorePreviousCollisionDirections();
+
+            //play catch sound
+            PlayOneShot(hornetCatchSFX);
+
+            //stop the needle
+            needle.Stop();
+
+            //remove tink effect
+            needleTink.SetParent(null);
+
+            //allow stunning again
+            stunControl.isSuspended = false;
 
             yield break;
         }

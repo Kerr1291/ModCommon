@@ -17,10 +17,11 @@ namespace ModCommon
         public void SetParent( Transform t )
         {
             //if deparenting, hide the parent
-            if( transform.parent != null && t == null )
+            if( t == null )
             {
                 gameObject.GetComponent<Collider2D>().enabled = false;
-                transform.parent.gameObject.SetActive( false );
+                if(transform.parent != null)
+                    transform.parent.gameObject.SetActive( false );
             }
             else
             {
