@@ -131,7 +131,7 @@ namespace ModCommon
 
         //TODO: convert to a weighted table type
         protected Dictionary<Func<IEnumerator>, float> dmgResponseChoices;
-        public Dictionary<Func<IEnumerator>, float> DmgResponseChoices {
+        public virtual Dictionary<Func<IEnumerator>, float> DmgResponseChoices {
             get {
                 if( dmgResponseChoices == null )
                 {
@@ -226,6 +226,7 @@ namespace ModCommon
             hitADash.offset = new Vector2( -.2f, .175f );
 
             //NOTE: I added this to try fixing a problem with hornet ocassionally ending up in walls. I think it might help, so I'm leaving it.
+            //      The actual solution was my "PreventOutOfBounds" component.
             body.interpolation = RigidbodyInterpolation2D.Extrapolate;
             
             idleWaitMin = normIdleWaitMin;
@@ -310,8 +311,8 @@ namespace ModCommon
             Dev.Where();
             
             SendEventToFirstFSM(dialogueManager, "BOX UP");
-
-            ShowBossTitle( this, areaTitleObject, -1f, "", "", "", "HORNET", "", "" );
+            
+            ShowTitle(-1f);
 
             yield return new WaitForSeconds( .3f );
 
@@ -320,7 +321,7 @@ namespace ModCommon
             yield break;
         }
 
-        TextMeshPro GetDialogueTextMesh()
+        protected virtual TextMeshPro GetDialogueTextMesh()
         {
             DialogueBox dialogue = dialogueManager.GetComponentInChildren<DialogueBox>();
 
@@ -499,35 +500,40 @@ namespace ModCommon
                     randomDelay -= Time.deltaTime;
                 }
 
-                //nothing hit us, choose the next state with 50/50
-                List<Func<IEnumerator>> nextStates = new List<Func<IEnumerator>>()
+                SelectNextStateFromIdle();
+            }
+
+            yield break;
+        }
+
+        protected virtual void SelectNextStateFromIdle()
+        {
+            //nothing hit us, choose the next state with 50/50
+            List<Func<IEnumerator>> nextStates = new List<Func<IEnumerator>>()
                 {
                     MaybeFlip, MaybeGSphere
                 };
 
-                bool flag = false;
-                while( !flag )
+            bool flag = false;
+            while(!flag)
+            {
+                //TODO: create a weighted table type that has max hit/miss settings
+                int randomWeightedIndex = GameRNG.Rand(0, nextStates.Count);
+                if(randomWeightedIndex == 0 && ctIdle < 2)
                 {
-                    //TODO: create a weighted table type that has max hit/miss settings
-                    int randomWeightedIndex = GameRNG.Rand(0, nextStates.Count);
-                    if( randomWeightedIndex == 0 && ctIdle < 2 )
-                    {
-                        ctIdle += 1;
-                        ctRun = 0;
-                        nextState = nextStates[ 0 ];
-                        flag = true;
-                    }
-                    else if( randomWeightedIndex == 1 && ctRun < 2 )
-                    {
-                        ctIdle = 0;
-                        ctRun += 1;
-                        nextState = nextStates[ 1 ];
-                        flag = true;
-                    }
+                    ctIdle += 1;
+                    ctRun = 0;
+                    nextState = nextStates[0];
+                    flag = true;
+                }
+                else if(randomWeightedIndex == 1 && ctRun < 2)
+                {
+                    ctIdle = 0;
+                    ctRun += 1;
+                    nextState = nextStates[1];
+                    flag = true;
                 }
             }
-
-            yield break;
         }
 
         protected virtual IEnumerator MaybeFlip()
@@ -676,7 +682,6 @@ namespace ModCommon
             throwRaycast = Physics2D.Raycast( throwOrigin, throwDirection, throwDistance, 1 << 8 );
             if( throwRaycast.collider != null )
             {
-                //TODO: alter this code so that we can throw, but make it shorter and/or have hornet grapple
                 //there's a wall, we cannot throw!
                 nextState = MoveChoiceB;
             }
@@ -950,7 +955,7 @@ namespace ModCommon
             bodyCollider.size = new Vector2( 1.4f, 1.2f );
 
             //start throwing the needle
-            needle.Play( gameObject, throwWindUpTime, throwMaxTravelTime, throwRay, throwDistance );
+            DoThrowNeedle();
 
             //put the needle tink on the needle
             needleTink.SetParent( needle.transform );
@@ -964,6 +969,11 @@ namespace ModCommon
             nextState = Thrown;
 
             yield break;
+        }
+
+        protected virtual void DoThrowNeedle()
+        {
+            needle.Play(gameObject, throwWindUpTime, throwMaxTravelTime, throwRay, throwDistance);
         }
 
         protected virtual IEnumerator Thrown()
@@ -2166,11 +2176,16 @@ namespace ModCommon
             //close the gates
             SetFightGates( true );
 
-            ShowBossTitle( this, areaTitleObject, 2f, "", "", "", "HORNET", "", "" );
+            ShowTitle(2f);
 
             nextState = Flourish;
 
             yield break;
+        }
+
+        public virtual void ShowTitle(float hideTime)
+        {
+            ShowBossTitle(this, areaTitleObject, hideTime, "", "", "", "HORNET", "", "");
         }
 
         //called by the stun controller when a stun happens
