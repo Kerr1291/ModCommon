@@ -63,6 +63,7 @@
     <Compile Include="Common\PathFinding\AStar.cs" />
     <Compile Include="Common\World.cs" />
     <Compile Include="Common\XMLHelpers\XMLUtils.cs" />
+    <Compile Include="Components\StateMachines\Rewrites\HornetBossHard.cs" />
     <Compile Include="Components\StateMachines\Rewrites\SuperDash.cs" />
     <Compile Include="Components\StateMachines\Rewrites\ADashEffect.cs" />
     <Compile Include="Components\StateMachines\EnemySM.cs" />
