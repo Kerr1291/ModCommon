@@ -403,8 +403,9 @@ namespace ModCommon
 
             gameObject.transform.localScale = gameObject.transform.localScale.SetX( -1f );
 
+            //scale down the jump away a bit (the .4f) so we don't jump into the wall
             float xScale = gameObject.transform.localScale.x;
-            float jumpAwaySpeed = xScale * evadeJumpAwaySpeed;
+            float jumpAwaySpeed = xScale * evadeJumpAwaySpeed * .4f;
 
             body.velocity = new Vector2( jumpAwaySpeed, 0f );
 

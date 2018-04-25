@@ -17,7 +17,7 @@ namespace ModCommon
     {
         protected Rigidbody2D body;
         protected BoxCollider2D bodyCollider;
-        protected LayerMask collisionLayer = 8;
+        protected LayerMask collisionLayer = (1 << 8);
 
         //do we respond to world collisions in these directions?
         public bool checkUp = false;
@@ -139,7 +139,7 @@ namespace ModCommon
             Vector2 direction = body.velocity.normalized;
             float distanceNextTimeStep = body.velocity.magnitude * timeStep;
 
-            RaycastHit2D raycastHit2D = Physics2D.Raycast(origin, direction, distanceNextTimeStep, 1 << layer);
+            RaycastHit2D raycastHit2D = Physics2D.Raycast(origin, direction, distanceNextTimeStep, layer);
 
             //we're not going to hit anything
             if(raycastHit2D.collider == null)
@@ -188,7 +188,7 @@ namespace ModCommon
                 this.topHit = false;
                 for(int i = 0; i < 3; i++)
                 {
-                    RaycastHit2D raycastHit2D = Physics2D.Raycast(this.topRays[i], Vector2.up, raycastLength, 1 << layer);
+                    RaycastHit2D raycastHit2D = Physics2D.Raycast(this.topRays[i], Vector2.up, raycastLength, layer);
                     if(raycastHit2D.collider != null)
                     {
                         this.topHit = true;
@@ -206,7 +206,7 @@ namespace ModCommon
                 this.rightHit = false;
                 for(int j = 0; j < 3; j++)
                 {
-                    RaycastHit2D raycastHit2D2 = Physics2D.Raycast(this.rightRays[j], Vector2.right, raycastLength, 1 << layer);
+                    RaycastHit2D raycastHit2D2 = Physics2D.Raycast(this.rightRays[j], Vector2.right, raycastLength, layer);
                     if(raycastHit2D2.collider != null)
                     {
                         this.rightHit = true;
@@ -225,7 +225,7 @@ namespace ModCommon
 
                 for(int k = 0; k < 3; k++)
                 {
-                    RaycastHit2D raycastHit2D3 = Physics2D.Raycast(this.bottomRays[k], -Vector2.up, raycastLength, 1 << layer);
+                    RaycastHit2D raycastHit2D3 = Physics2D.Raycast(this.bottomRays[k], -Vector2.up, raycastLength, layer);
                     if(raycastHit2D3.collider != null)
                     {
                         this.bottomHit = true;
@@ -243,7 +243,7 @@ namespace ModCommon
                 this.leftHit = false;
                 for(int l = 0; l < 3; l++)
                 {
-                    RaycastHit2D raycastHit2D4 = Physics2D.Raycast(this.leftRays[l], -Vector2.right, raycastLength, 1 << layer);
+                    RaycastHit2D raycastHit2D4 = Physics2D.Raycast(this.leftRays[l], -Vector2.right, raycastLength, layer);
                     if(raycastHit2D4.collider != null)
                     {
                         this.leftHit = true;
@@ -265,7 +265,7 @@ namespace ModCommon
                 this.topHit = false;
                 for(int i = 0; i < 3; i++)
                 {
-                    RaycastHit2D raycastHit2D = Physics2D.Raycast(this.topRays[i], Vector2.up, raycastLength, 1 << layer);
+                    RaycastHit2D raycastHit2D = Physics2D.Raycast(this.topRays[i], Vector2.up, raycastLength, layer);
                     if(raycastHit2D.collider != null)
                     {
                         this.topHit = true;
@@ -283,7 +283,7 @@ namespace ModCommon
                 this.rightHit = false;
                 for(int j = 0; j < 3; j++)
                 {
-                    RaycastHit2D raycastHit2D2 = Physics2D.Raycast(this.rightRays[j], Vector2.right, raycastLength, 1 << layer);
+                    RaycastHit2D raycastHit2D2 = Physics2D.Raycast(this.rightRays[j], Vector2.right, raycastLength, layer);
                     if(raycastHit2D2.collider != null)
                     {
                         this.rightHit = true;
@@ -302,7 +302,7 @@ namespace ModCommon
 
                 for(int k = 0; k < 3; k++)
                 {
-                    RaycastHit2D raycastHit2D3 = Physics2D.Raycast(this.bottomRays[k], -Vector2.up, raycastLength, 1 << layer);
+                    RaycastHit2D raycastHit2D3 = Physics2D.Raycast(this.bottomRays[k], -Vector2.up, raycastLength, layer);
                     if(raycastHit2D3.collider != null)
                     {
                         this.bottomHit = true;
@@ -320,7 +320,7 @@ namespace ModCommon
                 this.leftHit = false;
                 for(int l = 0; l < 3; l++)
                 {
-                    RaycastHit2D raycastHit2D4 = Physics2D.Raycast(this.leftRays[l], -Vector2.right, raycastLength, 1 << layer);
+                    RaycastHit2D raycastHit2D4 = Physics2D.Raycast(this.leftRays[l], -Vector2.right, raycastLength, layer);
                     if(raycastHit2D4.collider != null)
                     {
                         this.leftHit = true;

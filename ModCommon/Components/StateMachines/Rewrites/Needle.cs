@@ -21,7 +21,7 @@ namespace ModCommon
         IEnumerator mainLoop = null;
 
         public bool isAnimating = false;
-        protected LayerMask collisionLayer = 8;
+        protected LayerMask collisionLayer = (1 << 8);
 
         public bool canHitWalls = false;
         public bool HitWall { get; private set; }
@@ -273,7 +273,19 @@ namespace ModCommon
                 return;
 
             Dev.Where();
-            if(collision.gameObject.layer == collisionLayer)
+            if(collisionLayer.Contains(collision.gameObject))
+            {
+                HitWall = true;
+            }
+        }
+
+        protected virtual void OnTriggerEnter2D(Collider2D collider)
+        {
+            if(!isAnimating)
+                return;
+
+            Dev.Where();
+            if(collisionLayer.Contains(collider.gameObject))
             {
                 HitWall = true;
             }

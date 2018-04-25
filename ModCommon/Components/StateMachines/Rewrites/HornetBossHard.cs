@@ -181,8 +181,8 @@ namespace ModCommon
             //wait while the needle does its thing (boomerang effect)
             while(needle.isAnimating)
             {
-                if( !needle.gameObject.activeInHierarchy )
-                    needle.gameObject.SetActive( true );
+                //if( !needle.gameObject.activeInHierarchy )
+                //    needle.gameObject.SetActive( true );
 
                 yield return new WaitForEndOfFrame();
             }
