@@ -5,10 +5,6 @@ using System.Linq;
 using System.Text;
 using UnityEngine;
 
-#if UNITY_EDITOR
-using nv.Tests;
-#endif
-
 namespace ModCommon
 {
     public class Needle : MonoBehaviour
@@ -22,8 +18,7 @@ namespace ModCommon
         public GameObject owner;
         public GameObject thread;
         IEnumerator currentState = null;
-
-        IEnumerator animation = null;
+        IEnumerator mainLoop = null;
 
         public bool isAnimating = false;
         protected LayerMask collisionLayer = 8;
@@ -40,34 +35,6 @@ namespace ModCommon
 
         void Awake()
         {
-            bodyCollider = gameObject.GetComponent<PolygonCollider2D>();
-            bodyCollider.offset = new Vector2( 0f, -.3f );
-        }
-
-        private void OnEnable()
-        {
-            Dev.Log( "Enabled!" );
-            if( animation != null )
-                StartCoroutine( animation );
-        }
-
-        private void OnDisable()
-        {
-            Dev.Log( "Disabled!" );
-        }
-
-        public void OnCollision( RaycastHit2D r, GameObject g, GameObject h)
-        {
-            if( h.layer == collisionLayer )
-            {
-                HitWall = true;
-            }
-        }
-
-        public void Play( GameObject owner, float startDelay, float throwMaxTravelTime, Ray throwRay, float throwDistance )
-        {
-            Dev.Where();
-            this.owner = owner;
             tk2dAnimator = gameObject.GetComponent<tk2dSpriteAnimator>();
             bodyCollider = gameObject.GetComponent<PolygonCollider2D>();
             body = gameObject.GetComponent<Rigidbody2D>();
@@ -78,50 +45,75 @@ namespace ModCommon
             preventOOB.onBoundCollision += OnCollision;
 
             meshRenderer.enabled = false;
-            startPos = throwRay.origin + new Vector3( 0f, needleYOffset, 0f );
-            transform.position = startPos;
-            gameObject.SetActive( true );
+            bodyCollider.offset = new Vector2( 0f, -.3f );
+        }
 
-            thread = gameObject.FindGameObjectInChildren( "Thread" );
+        void OnEnable()
+        {
+            Dev.Where();
+            if(thread == null)
+                thread = gameObject.FindGameObjectInChildren("Thread");
 
             isAnimating = true;
             HitWall = false;
 
+            mainLoop = MainAILoop();
+            StartCoroutine(mainLoop);
+        }
+
+        void OnDisable()
+        {
+            Dev.Where();
+            if(meshRenderer != null)
+                meshRenderer.enabled = false;
+            isAnimating = false;
+            mainLoop = null;
+            currentState = null;
+        }
+
+        public void OnCollision( RaycastHit2D collisionRay, GameObject collidingObject, GameObject collidedObject )
+        {
+            HitWall = true;            
+        }
+
+        public void Play( GameObject owner, float startDelay, float throwMaxTravelTime, Ray throwRay, float throwDistance )
+        {
+            Dev.Where();
+            this.owner = owner;
+            startPos = throwRay.origin + new Vector3( 0f, needleYOffset, 0f );
+            transform.position = startPos;
+            
             this.startDelay = startDelay;
             this.throwMaxTravelTime = throwMaxTravelTime;
             this.throwRay = throwRay;
             this.throwDistance = throwDistance;
 
-            animation = MainAILoop();
-            StartCoroutine( animation );
+            gameObject.SetActive(true);
         }
 
         public void Stop()
         {
             Dev.Where();
-            if( meshRenderer != null )
-                meshRenderer.enabled = false;
-            isAnimating = false;
             gameObject.SetActive( false );
-            animation = null;
         }
 
         IEnumerator MainAILoop()
         {
             Dev.Where();
             currentState = Out();
-            //StartCoroutine( Debug() );
 
-            Dev.Log( "cruve" );
-            Dev.Log( "owner" + owner );
             for(; ; )
             {
-                Dev.Log( "running?" );
                 if( owner == null )
+                    yield break;
+
+                if(currentState == null)
                     yield break;
 
                 yield return currentState;
             }
+
+            yield break;
         }
 
         IEnumerator Out()
@@ -132,13 +124,18 @@ namespace ModCommon
 
             meshRenderer.enabled = true;
 
-            transform.localRotation = Quaternion.identity;
-
-            Vector2 throwTarget = throwRay.direction * throwDistance;
+            Vector2 throwVector = throwRay.direction * throwDistance;
 
             //needle requires a 180 flip to orient properly
-            float angleToTarget = GetAngleToTarget(startPos, throwTarget, 0f, -.5f);
-            transform.rotation = Quaternion.AngleAxis(angleToTarget + 180f, Vector3.forward);
+            //float angleToTarget = GetAngleToTarget(startPos, throwTarget, 0f, -.5f);
+            //transform.rotation = Quaternion.AngleAxis(angleToTarget + 180f, Vector3.forward);
+
+            Dev.Log("Rotation before = " + transform.rotation.eulerAngles);
+
+            //TODO: Testing this
+            transform.right = throwRay.direction;
+
+            Dev.Log("Rotation = " + transform.rotation.eulerAngles);
 
             //Vector3 throwDirection = ((Vector3)throwTarget + throwRay.origin) - transform.position;
             //if( throwDirection != Vector3.zero )
@@ -146,7 +143,6 @@ namespace ModCommon
             //    float angle = Mathf.Atan2(throwDirection.y, throwDirection.x) * Mathf.Rad2Deg;
             //    transform.rotation = Quaternion.AngleAxis( angle + 180f, Vector3.forward );
             //}
-            Dev.Log( "cruve" );
 
             AnimationCurve throwCurve = new AnimationCurve();
             throwCurve.AddKey( 0f, 0f );
@@ -166,7 +162,6 @@ namespace ModCommon
 
             while( time < throwTime )
             {
-                Dev.Log( "Animating" );
                 if(canHitWalls && HitWall)
                 {
                     break;
@@ -174,7 +169,9 @@ namespace ModCommon
 
                 float t = time/throwTime;
 
-                transform.position = throwCurve.Evaluate( t ) * (Vector3)throwTarget + startPos;
+                body.position = throwCurve.Evaluate( t ) * (Vector3)throwVector + startPos;
+                Dev.Log("Rotation = " + transform.rotation.eulerAngles);
+                Dev.Log("Animating "+ body.position);
 
                 time += Time.fixedDeltaTime;
                 yield return new WaitForFixedUpdate();
@@ -198,8 +195,11 @@ namespace ModCommon
         {
             Dev.Where();
 
+            thread.SetActive(true);
+
             isAnimating = false;
-            animation = null;
+            currentState = null;
+            mainLoop = null;
 
             yield break;
         }
@@ -250,7 +250,8 @@ namespace ModCommon
             meshRenderer.enabled = false;
             isAnimating = false;
             gameObject.SetActive( false );
-            animation = null;
+            mainLoop = null;
+            currentState = null;
 
             yield break;
         }

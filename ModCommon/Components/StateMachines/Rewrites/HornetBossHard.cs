@@ -29,6 +29,9 @@ namespace ModCommon
         public float throwWindUpMod = .1f;
         public float throwMaxTravelTimeMod = .5f;
 
+        public float newThrowDistance = 24f;
+        public int maxStunCount = 12;
+
         public override Dictionary<Func<IEnumerator>, float> DmgResponseChoices
         {
             get
@@ -77,11 +80,11 @@ namespace ModCommon
             throwWindUpTime *= throwWindUpMod;
             throwMaxTravelTime *= throwMaxTravelTimeMod;
 
-            throwDistance = 24f;
+            throwDistance = newThrowDistance;
 
             needle.GetComponent<DamageHero>().damageDealt = needleDamage;
 
-            stunControl.maxStuns = 12;
+            stunControl.maxStuns = maxStunCount;
 
             yield break;
         }
@@ -128,7 +131,6 @@ namespace ModCommon
         protected override IEnumerator CanThrow()
         {
             Dev.Where();
-            Dev.Log( "Hard" );
 
             HeroController hero = HeroController.instance;
             Vector3 currentPosition = gameObject.transform.position;
@@ -168,7 +170,6 @@ namespace ModCommon
         protected override void DoThrowNeedle()
         {
             Dev.Where();
-            Dev.Log( "Hard" );
             needle.canHitWalls = true;
             needle.Play(gameObject, throwWindUpTime, throwMaxTravelTime, throwRay, throwDistance);
         }
@@ -176,7 +177,6 @@ namespace ModCommon
         protected override IEnumerator Thrown()
         {
             Dev.Where();
-            Dev.Log( "Hard" );
 
             //wait while the needle does its thing (boomerang effect)
             while(needle.isAnimating)

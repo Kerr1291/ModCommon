@@ -18,7 +18,7 @@ namespace ModCommon
         //The raycast, the object colliding, the object that it collided with
         public Action<RaycastHit2D, GameObject, GameObject> onOtherCollision;
 
-        public LayerMask boundsLayer = 8;
+        public LayerMask boundsLayer = 8 + 256;
         public LayerMask? otherLayer = null;
 
         public float minCheckDistance = Mathf.Epsilon;
@@ -57,10 +57,7 @@ namespace ModCommon
                 Vector3 collisionPoint = otherHit.Value.point;
                 Vector3 collisionNormal = otherHit.Value.normal;
 
-                if( onOtherCollision != null )
-                {
-                    onOtherCollision.Invoke( otherHit.Value, gameObject, otherHit.Value.collider.gameObject );
-                }
+                onOtherCollision.Invoke(otherHit.Value, gameObject, otherHit.Value.collider.gameObject );
             }
             
             //resolve any collisions
