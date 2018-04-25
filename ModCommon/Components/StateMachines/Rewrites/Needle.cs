@@ -17,10 +17,13 @@ namespace ModCommon
         public PolygonCollider2D bodyCollider;
         public Rigidbody2D body;
         public MeshRenderer meshRenderer;
+        public PreventOutOfBounds preventOOB;
 
         public GameObject owner;
         public GameObject thread;
         IEnumerator currentState = null;
+
+        IEnumerator animation = null;
 
         public bool isAnimating = false;
         protected LayerMask collisionLayer = 8;
@@ -41,13 +44,38 @@ namespace ModCommon
             bodyCollider.offset = new Vector2( 0f, -.3f );
         }
 
+        private void OnEnable()
+        {
+            Dev.Log( "Enabled!" );
+            if( animation != null )
+                StartCoroutine( animation );
+        }
+
+        private void OnDisable()
+        {
+            Dev.Log( "Disabled!" );
+        }
+
+        public void OnCollision( RaycastHit2D r, GameObject g, GameObject h)
+        {
+            if( h.layer == collisionLayer )
+            {
+                HitWall = true;
+            }
+        }
+
         public void Play( GameObject owner, float startDelay, float throwMaxTravelTime, Ray throwRay, float throwDistance )
         {
+            Dev.Where();
             this.owner = owner;
             tk2dAnimator = gameObject.GetComponent<tk2dSpriteAnimator>();
             bodyCollider = gameObject.GetComponent<PolygonCollider2D>();
             body = gameObject.GetComponent<Rigidbody2D>();
             meshRenderer = gameObject.GetComponent<MeshRenderer>();
+            preventOOB = gameObject.GetOrAddComponent<PreventOutOfBounds>();
+
+            preventOOB.onBoundCollision -= OnCollision;
+            preventOOB.onBoundCollision += OnCollision;
 
             meshRenderer.enabled = false;
             startPos = throwRay.origin + new Vector3( 0f, needleYOffset, 0f );
@@ -64,15 +92,18 @@ namespace ModCommon
             this.throwRay = throwRay;
             this.throwDistance = throwDistance;
 
-            StartCoroutine( MainAILoop() );
+            animation = MainAILoop();
+            StartCoroutine( animation );
         }
 
         public void Stop()
         {
+            Dev.Where();
             if( meshRenderer != null )
                 meshRenderer.enabled = false;
             isAnimating = false;
             gameObject.SetActive( false );
+            animation = null;
         }
 
         IEnumerator MainAILoop()
@@ -81,8 +112,11 @@ namespace ModCommon
             currentState = Out();
             //StartCoroutine( Debug() );
 
+            Dev.Log( "cruve" );
+            Dev.Log( "owner" + owner );
             for(; ; )
             {
+                Dev.Log( "running?" );
                 if( owner == null )
                     yield break;
 
@@ -112,6 +146,7 @@ namespace ModCommon
             //    float angle = Mathf.Atan2(throwDirection.y, throwDirection.x) * Mathf.Rad2Deg;
             //    transform.rotation = Quaternion.AngleAxis( angle + 180f, Vector3.forward );
             //}
+            Dev.Log( "cruve" );
 
             AnimationCurve throwCurve = new AnimationCurve();
             throwCurve.AddKey( 0f, 0f );
@@ -131,6 +166,7 @@ namespace ModCommon
 
             while( time < throwTime )
             {
+                Dev.Log( "Animating" );
                 if(canHitWalls && HitWall)
                 {
                     break;
@@ -144,6 +180,8 @@ namespace ModCommon
                 yield return new WaitForFixedUpdate();
             }
 
+            Dev.Log( "canHitWalls"+ canHitWalls );
+            Dev.Log( "HitWall" + HitWall );
             if(canHitWalls && HitWall)
             {
                 currentState = CompleteFromHitWall();
@@ -161,6 +199,7 @@ namespace ModCommon
             Dev.Where();
 
             isAnimating = false;
+            animation = null;
 
             yield break;
         }
@@ -211,6 +250,7 @@ namespace ModCommon
             meshRenderer.enabled = false;
             isAnimating = false;
             gameObject.SetActive( false );
+            animation = null;
 
             yield break;
         }
@@ -231,6 +271,7 @@ namespace ModCommon
             if(!isAnimating)
                 return;
 
+            Dev.Where();
             if(collision.gameObject.layer == collisionLayer)
             {
                 HitWall = true;

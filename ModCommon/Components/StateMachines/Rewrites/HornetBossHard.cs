@@ -128,6 +128,7 @@ namespace ModCommon
         protected override IEnumerator CanThrow()
         {
             Dev.Where();
+            Dev.Log( "Hard" );
 
             HeroController hero = HeroController.instance;
             Vector3 currentPosition = gameObject.transform.position;
@@ -149,13 +150,13 @@ namespace ModCommon
             
             throwRay = new Ray(throwOrigin, throwDirection);
             throwRaycast = Physics2D.Raycast(throwOrigin, throwDirection, throwDistance, 1 << 8);
-            if(throwRaycast.collider != null)
-            {
-                //TODO: alter this code so that we can throw, but make it shorter and/or have hornet grapple
-                //there's a wall, we cannot throw!
-                nextState = MoveChoiceB;
-            }
-            else
+            //if(throwRaycast.collider != null)
+            //{
+            //    //TODO: alter this code so that we can throw, but make it shorter and/or have hornet grapple
+            //    //there's a wall, we cannot throw!
+            //    nextState = MoveChoiceB;
+            //}
+            //else
             {
                 //we can throw!
                 nextState = MoveChoiceA;
@@ -166,6 +167,8 @@ namespace ModCommon
 
         protected override void DoThrowNeedle()
         {
+            Dev.Where();
+            Dev.Log( "Hard" );
             needle.canHitWalls = true;
             needle.Play(gameObject, throwWindUpTime, throwMaxTravelTime, throwRay, throwDistance);
         }
@@ -173,10 +176,14 @@ namespace ModCommon
         protected override IEnumerator Thrown()
         {
             Dev.Where();
+            Dev.Log( "Hard" );
 
             //wait while the needle does its thing (boomerang effect)
             while(needle.isAnimating)
             {
+                if( !needle.gameObject.activeInHierarchy )
+                    needle.gameObject.SetActive( true );
+
                 yield return new WaitForEndOfFrame();
             }
 
@@ -194,6 +201,7 @@ namespace ModCommon
 
         protected virtual IEnumerator Grapple()
         {
+            Dev.Where();
             EnableCollisionsInDirection(true, false, true, true);
 
             PlayOneShotRandom(hornetJumpYells);

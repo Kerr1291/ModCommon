@@ -20,8 +20,8 @@ namespace ModCommon
             if( t == null )
             {
                 gameObject.GetComponent<Collider2D>().enabled = false;
-                if(transform.parent != null)
-                    transform.parent.gameObject.SetActive( false );
+                //if(transform.parent != null)
+                //    transform.parent.gameObject.SetActive( false );
             }
             else
             {
