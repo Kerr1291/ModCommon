@@ -18,7 +18,9 @@ namespace ModCommon
         public PolygonCollider2D hitADash;
         public PolygonCollider2D hitGDash;
         public ParticleSystem dustHardLand;
-        
+
+        public PreventOutOfBounds boundsChecking;
+
         public ThrowEffect throwEffect;
         public ADashEffect aDashEffect;
         public GDashEffect gDashEffect;
@@ -435,6 +437,8 @@ namespace ModCommon
             Dev.Where();
 
             PlayAnimation( hornetSoftLandClip );
+
+            body.velocity = Vector2.zero;
 
             yield return new WaitForSeconds( hornetSoftLandClip.Duration );
 
@@ -1135,12 +1139,14 @@ namespace ModCommon
 
                 if( willSphere && isFalling && withinSphereHeightRange )
                 {
+                    Dev.Log( "MaybeDoSphere" );
                     nextState = MaybeDoSphere;
                     break;
                 }
 
                 if( airDashTimer <= 0f )
                 {
+                    Dev.Log( "ADashAntic" );
                     nextState = ADashAntic;
                     break;
                 }
@@ -1148,10 +1154,12 @@ namespace ModCommon
                 //did we hit a wall? end evade timer early
                 if( bottomHit )
                 {
+                    Dev.Log( "landing" );
                     nextState = Land;
                     break;
                 }
 
+                Dev.Log( "airDashTimer "+ airDashTimer );
                 airDashTimer -= Time.deltaTime;
             }
 
@@ -2429,7 +2437,7 @@ namespace ModCommon
                 corpse.owner = this;
             }
 
-            gameObject.AddComponent<PreventOutOfBounds>();
+            boundsChecking = gameObject.AddComponent<PreventOutOfBounds>();
             stunControl = gameObject.AddComponent<StunController>();
             stunControl.onStun += OnStun;
 

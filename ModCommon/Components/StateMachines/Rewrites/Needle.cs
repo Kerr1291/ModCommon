@@ -79,6 +79,7 @@ namespace ModCommon
         public void Play( GameObject owner, float startDelay, float throwMaxTravelTime, Ray throwRay, float throwDistance )
         {
             Dev.Where();
+            RemoveDeprecatedComponents();
             this.owner = owner;
             startPos = throwRay.origin + new Vector3( 0f, needleYOffset, 0f );
             transform.position = startPos;
@@ -88,7 +89,7 @@ namespace ModCommon
             this.throwRay = throwRay;
             this.throwDistance = throwDistance;
 
-            gameObject.SetActive(true);
+            gameObject.SetActive( true );
         }
 
         public void Stop()
@@ -133,7 +134,7 @@ namespace ModCommon
             Dev.Log("Rotation before = " + transform.rotation.eulerAngles);
 
             //TODO: Testing this
-            transform.right = throwRay.direction;
+            transform.right = -throwRay.direction;
 
             Dev.Log("Rotation = " + transform.rotation.eulerAngles);
 
@@ -288,6 +289,38 @@ namespace ModCommon
             if(collisionLayer.Contains(collider.gameObject))
             {
                 HitWall = true;
+            }
+        }
+
+        protected virtual void RemoveDeprecatedComponents()
+        {
+            foreach( PlayMakerFSM p in gameObject.GetComponentsInChildren<PlayMakerFSM>( true ) )
+            {
+                GameObject.DestroyImmediate( p );
+            }
+            foreach( PlayMakerUnity2DProxy p in gameObject.GetComponentsInChildren<PlayMakerUnity2DProxy>( true ) )
+            {
+                GameObject.DestroyImmediate( p );
+            }
+            foreach( PlayMakerFixedUpdate p in gameObject.GetComponentsInChildren<PlayMakerFixedUpdate>( true ) )
+            {
+                GameObject.DestroyImmediate( p );
+            }
+            foreach( DeactivateIfPlayerdataTrue p in gameObject.GetComponentsInChildren<DeactivateIfPlayerdataTrue>( true ) )
+            {
+                GameObject.DestroyImmediate( p );
+            }
+            foreach( iTweenFSMEvents p in gameObject.GetComponentsInChildren<iTweenFSMEvents>( true ) )
+            {
+                GameObject.DestroyImmediate( p );
+            }
+            foreach( iTween p in gameObject.GetComponentsInChildren<iTween>( true ) )
+            {
+                GameObject.DestroyImmediate( p );
+            }
+            foreach( iTween p in gameObject.GetComponentsInChildren<iTween>( true ) )
+            {
+                GameObject.DestroyImmediate( p );
             }
         }
     }

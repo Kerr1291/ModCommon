@@ -67,7 +67,7 @@ namespace ModCommon
 
         protected virtual void OnCollisionEnter2D(Collision2D collision)
         {
-            if(collision.gameObject.layer == collisionLayer)
+            if( collisionLayer.Contains(collision.gameObject.layer) )
             {
                 CheckTouching(collisionLayer);
             }
@@ -75,7 +75,7 @@ namespace ModCommon
 
         protected virtual void OnCollisionExit2D(Collision2D collision)
         {
-            if(collision.gameObject.layer == collisionLayer)
+            if( collisionLayer.Contains( collision.gameObject.layer ) )
             {
                 CheckTouching(collisionLayer);
             }

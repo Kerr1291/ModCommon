@@ -26,8 +26,8 @@ namespace ModCommon
         public int needleDamage = 2;
 
         public float throwAnticMod = 2f;
-        public float throwWindUpMod = .1f;
-        public float throwMaxTravelTimeMod = .5f;
+        public float throwWindUpMod = .2f;
+        public float throwMaxTravelTimeMod = .6f;
 
         public float newThrowDistance = 24f;
         public int maxStunCount = 12;
@@ -152,6 +152,8 @@ namespace ModCommon
             
             throwRay = new Ray(throwOrigin, throwDirection);
             throwRaycast = Physics2D.Raycast(throwOrigin, throwDirection, throwDistance, 1 << 8);
+            //Dev.CreateLineRenderer( throwOrigin, throwRaycast.point, Color.white, -2f, .1f );
+            //Dev.Log( "ray hit " + throwRaycast.collider.gameObject );
             //if(throwRaycast.collider != null)
             //{
             //    //TODO: alter this code so that we can throw, but make it shorter and/or have hornet grapple
@@ -199,9 +201,43 @@ namespace ModCommon
             yield break;
         }
 
+
+        void OnBoundsCollision( RaycastHit2D ray, GameObject self, GameObject other )
+        {
+            if(ray.normal.x < 0f)
+            {
+                rightHit = true;
+            }
+            else
+            if( ray.normal.x > 0f )
+            {
+                leftHit = true;
+            }
+            else//( Mathf.Abs( ray.normal.y ) > .9f )
+            {
+                topHit = true;
+            }
+        }
+
+        protected override void OnCollisionEnter2D( Collision2D collision )
+        {
+            base.OnCollisionEnter2D( collision );
+
+            if( isGrappling )
+            {
+                RaycastHit2D raycast = GetRaycastInDirection( transform.position, ( needle.transform.position - transform.position ).normalized );
+                OnBoundsCollision( raycast, gameObject, raycast.collider.gameObject );
+            }
+        }
+
+        bool isGrappling = false;
+
         protected virtual IEnumerator Grapple()
         {
             Dev.Where();
+
+            boundsChecking.onBoundCollision += OnBoundsCollision;
+
             EnableCollisionsInDirection(true, false, true, true);
 
             PlayOneShotRandom(hornetJumpYells);
@@ -220,20 +256,21 @@ namespace ModCommon
             DoEnemyKillShakeEffect();
 
             //get the grapple clip
-            tk2dSpriteAnimationClip grappleClip =
-                hornetCorpse.GetComponent<HornetCorpse>().leaveAnim.GetClipByName("Harpoon Side");
+            //tk2dSpriteAnimationClip grappleClip =
+            //    hornetCorpse.GetComponent<HornetCorpse>().leaveAnim.GetClipByName("Harpoon Side");
 
             //play it
-            PlayAnimation(grappleClip);
+            PlayAnimation("A Dash");//TODO: look into getting the grapple clip and playing that here
 
             //make hornet zoom away
             //get the escape direction and add some distance one so the smoothdamp finishes inside the wall
             float distanceToGrapple = (needle.transform.position - transform.position).magnitude + 10f;
 
             //calculate the new escape point farther away (inside the wall)
-            Vector3 grapplePoint = ((needle.transform.position - transform.position)).normalized * (distanceToGrapple);
+            Vector3 grapplePoint = transform.position + ((needle.transform.position - transform.position)).normalized * (distanceToGrapple);
             Vector3 grappleVelocity = Vector3.zero;
-
+            //Dev.CreateLineRenderer( transform.position, grapplePoint, Color.white, -2f, .2f );
+            isGrappling = true;
             while(!rightHit && !leftHit && !topHit)
             {
                 yield return new WaitForEndOfFrame();
@@ -243,7 +280,7 @@ namespace ModCommon
                 //lock the velocity for the duration of the dash
                 transform.position = Vector3.SmoothDamp(transform.position, grapplePoint, ref grappleVelocity, grappleTime, grappleMaxVelocity, Time.deltaTime);
                 distanceToGrapple = (grapplePoint - transform.position).magnitude;
-
+                Dev.Log( ""+ transform.position);
                 //did we hit a wall? end evade timer early
                 if(topHit)
                 {
@@ -261,6 +298,9 @@ namespace ModCommon
                     break;
                 }
             }
+
+            isGrappling = false;
+            boundsChecking.onBoundCollision -= OnBoundsCollision;
 
             //restore collision check directions
             RestorePreviousCollisionDirections();
