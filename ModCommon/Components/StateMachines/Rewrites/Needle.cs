@@ -163,12 +163,17 @@ namespace ModCommon
 
             while( time < throwTime )
             {
-                if(canHitWalls && HitWall)
+                float t = time/throwTime;
+
+                if( t > .1f && canHitWalls && HitWall)
                 {
                     break;
                 }
 
-                float t = time/throwTime;
+                if( t <= .1f )
+                {
+                    HitWall = false;
+                }
 
                 body.position = throwCurve.Evaluate( t ) * (Vector3)throwVector + startPos;
                 Dev.Log("Rotation = " + transform.rotation.eulerAngles);

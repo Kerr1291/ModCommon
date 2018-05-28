@@ -1130,6 +1130,7 @@ namespace ModCommon
             Dev.Log( "Enabled downward collisions" );
 
             float airDashTimer = airDashPause;
+            Dev.Log( "airDashTimer "+ airDashTimer );
             for(; ; )
             {
                 yield return new WaitForEndOfFrame();
@@ -1159,10 +1160,10 @@ namespace ModCommon
                     break;
                 }
 
-                Dev.Log( "airDashTimer "+ airDashTimer );
                 airDashTimer -= Time.deltaTime;
             }
 
+            Dev.Log( "Restored previous collisions" );
             //restore collision check directions
             RestorePreviousCollisionDirections();
 
@@ -1189,6 +1190,8 @@ namespace ModCommon
 
             bodyCollider.offset = new Vector2( .1f, -.3f );
             bodyCollider.size = new Vector2( .9f, 2.6f );
+
+            body.velocity = Vector2.zero;
 
             gameObject.transform.rotation = Quaternion.identity;
 
@@ -1447,7 +1450,7 @@ namespace ModCommon
 
             nextState = InAir;
 
-            yield break;
+            yield break; 
         }
 
         protected virtual IEnumerator LandY()
@@ -2441,9 +2444,9 @@ namespace ModCommon
             stunControl = gameObject.AddComponent<StunController>();
             stunControl.onStun += OnStun;
 
-            //gameObject.AddComponent<DebugColliders>();
-            //needle.gameObject.AddComponent<DebugColliders>();
-            //needleTink.gameObject.AddComponent<DebugColliders>();
+            gameObject.AddComponent<DebugColliders>();
+            needle.gameObject.AddComponent<DebugColliders>();
+            needleTink.gameObject.AddComponent<DebugColliders>();
             //HeroController.instance.gameObject.AddComponent<DebugColliders>();            
         }
 

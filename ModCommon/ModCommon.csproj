@@ -18,9 +18,11 @@
     <DebugType>full</DebugType>
     <Optimize>false</Optimize>
     <OutputPath>bin\Debug\</OutputPath>
-    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <DefineConstants>TRACE;DEBUG;NET35;DEBUG_3_5;NET35</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
+    <NoWarn>1701;1702;1705</NoWarn>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
@@ -60,6 +62,37 @@
     <Compile Include="Common\Dev.cs" />
     <Compile Include="Common\DevLog.cs" />
     <Compile Include="Common\GameInspector.cs" />
+    <Compile Include="Common\Harmony\Attributes.cs" />
+    <Compile Include="Common\Harmony\CodeInstruction.cs" />
+    <Compile Include="Common\Harmony\CodeTranspiler.cs" />
+    <Compile Include="Common\Harmony\Extras\DelegateTypeFactory.cs" />
+    <Compile Include="Common\Harmony\Extras\FastAccess.cs" />
+    <Compile Include="Common\Harmony\Extras\MethodInvoker.cs" />
+    <Compile Include="Common\Harmony\GlobalSuppressions.cs" />
+    <Compile Include="Common\Harmony\HarmonyInstance.cs" />
+    <Compile Include="Common\Harmony\HarmonyMethod.cs" />
+    <Compile Include="Common\Harmony\HarmonySharedState.cs" />
+    <Compile Include="Common\Harmony\ILCopying\ByteBuffer.cs" />
+    <Compile Include="Common\Harmony\ILCopying\Emitter.cs" />
+    <Compile Include="Common\Harmony\ILCopying\ILInstruction.cs" />
+    <Compile Include="Common\Harmony\ILCopying\Memory.cs" />
+    <Compile Include="Common\Harmony\ILCopying\MethodCopier.cs" />
+    <Compile Include="Common\Harmony\ILCopying\Signature.cs" />
+    <Compile Include="Common\Harmony\MethodPatcher.cs" />
+    <Compile Include="Common\Harmony\Patch.cs" />
+    <Compile Include="Common\Harmony\PatchFunctions.cs" />
+    <Compile Include="Common\Harmony\PatchProcessor.cs" />
+    <Compile Include="Common\Harmony\Priority.cs" />
+    <Compile Include="Common\Harmony\Tools\AccessCache.cs" />
+    <Compile Include="Common\Harmony\Tools\AccessTools.cs" />
+    <Compile Include="Common\Harmony\Tools\DynamicTools.cs" />
+    <Compile Include="Common\Harmony\Tools\Extensions.cs" />
+    <Compile Include="Common\Harmony\Tools\FileLog.cs" />
+    <Compile Include="Common\Harmony\Tools\PatchTools.cs" />
+    <Compile Include="Common\Harmony\Tools\SelfPatching.cs" />
+    <Compile Include="Common\Harmony\Tools\SymbolExtensions.cs" />
+    <Compile Include="Common\Harmony\Tools\Traverse.cs" />
+    <Compile Include="Common\Harmony\Transpilers.cs" />
     <Compile Include="Common\PathFinding\AStar.cs" />
     <Compile Include="Common\World.cs" />
     <Compile Include="Common\XMLHelpers\XMLUtils.cs" />
