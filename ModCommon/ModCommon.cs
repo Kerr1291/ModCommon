@@ -115,7 +115,7 @@ namespace ModCommon
         {
             if( to.name == "Menu_Title" )
             {
-                ModTools.SetNoclip( false );
+                Tools.SetNoclip( false );
             }
         }
     }

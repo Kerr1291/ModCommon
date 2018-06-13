@@ -5,7 +5,7 @@ using UnityEngine;
 
 namespace ModCommon
 {
-    public static class ModTools
+    public static class Tools
     {
         public static void EnterSandbox()
         {
