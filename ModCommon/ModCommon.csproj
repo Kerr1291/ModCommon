@@ -114,7 +114,7 @@
     <None Include="packages.config" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
-  <Target Name="AfterBuild">
+  <Target Name="AfterBuild" Condition="'$(OS)' == 'Windows_NT'">
     <Exec Command="..\install_build.bat" />
   </Target>
   <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
@@ -124,14 +124,23 @@
     <Error Condition="!Exists('..\packages\ILRepack.2.0.15\build\ILRepack.props')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\ILRepack.2.0.15\build\ILRepack.props'))" />
   </Target>
   <PropertyGroup>
-    <PostBuildEvent>copy /Y "$(SolutionDir)MonoMod\*" "$(ProjectDir)$(OutputPath)\"
-cd "$(ProjectDir)$(OutputPath)"
-$(SolutionDir)MonoMod\MonoMod.RuntimeDetour.HookGen.exe --private Assembly-CSharp.dll
-$(SolutionDir)MonoMod\MonoMod.RuntimeDetour.HookGen.exe --private Playmaker.dll
+    <PostBuildEvent Condition="'$(OS)' == 'Windows_NT'">copy /Y "$(SolutionDir)MonoMod\*" "$(ProjectDir)$(OutputPath)\"
+      cd "$(ProjectDir)$(OutputPath)"
+      $(SolutionDir)MonoMod\MonoMod.RuntimeDetour.HookGen.exe --private Assembly-CSharp.dll
+      $(SolutionDir)MonoMod\MonoMod.RuntimeDetour.HookGen.exe --private Playmaker.dll
 
-rem "Rename so that the output has the right assembly name"
-move "ModCommon.dll" "ModCommonNoHooks.dll"
-$(SolutionDir)packages\ILRepack.2.0.15\tools\ILRepack.exe /out:ModCommon.dll ModCommonNoHooks.dll MMHOOK_Assembly-CSharp.dll MMHOOK_Playmaker.dll MonoMod.Utils.dll Mono.Cecil.dll MonoMod.RuntimeDetour.dll</PostBuildEvent>
+      rem "Rename so that the output has the right assembly name"
+      move "ModCommon.dll" "ModCommonNoHooks.dll"
+      $(SolutionDir)packages\ILRepack.2.0.15\tools\ILRepack.exe /out:ModCommon.dll ModCommonNoHooks.dll MMHOOK_Assembly-CSharp.dll MMHOOK_Playmaker.dll MonoMod.Utils.dll Mono.Cecil.dll MonoMod.RuntimeDetour.dll</PostBuildEvent>
+    <PostBuildEvent Condition="'$(OS)' != 'Windows_NT'">
+      cp -r "$(SolutionDir)MonoMod/"* "$(ProjectDir)$(OutputPath)"
+      cd "$(ProjectDir)$(OutputPath)"
+      mono $(SolutionDir)MonoMod/MonoMod.RuntimeDetour.HookGen.exe --private Assembly-CSharp.dll
+      mono $(SolutionDir)MonoMod/MonoMod.RuntimeDetour.HookGen.exe --private PlayMaker.dll
+
+      mv "ModCommon.dll" "ModCommonNoHooks.dll"
+      mono $(SolutionDir)packages/ILRepack.2.0.15/tools/ILRepack.exe /out:ModCommon.dll ModCommonNoHooks.dll MMHOOK_Assembly-CSharp.dll MMHOOK_PlayMaker.dll MonoMod.Utils.dll Mono.Cecil.dll MonoMod.RuntimeDetour.dll
+  </PostBuildEvent>
   </PropertyGroup>
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
