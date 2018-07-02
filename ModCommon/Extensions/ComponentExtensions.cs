@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using UnityEngine;
 using System.Reflection;
+using HutongGames.PlayMaker.Actions;
 
 namespace ModCommon
 {
@@ -265,8 +266,7 @@ namespace ModCommon
                                 }
 
                                 {
-                                    var a = ( x as HutongGames.PlayMaker.Actions.BuildString );
-                                    if( a != null )
+                                    if (x is BuildString a)
                                     {
                                         file.WriteLine( componentHeader + @" \----PFSM ---- BuildString (Name) = " + a?.Name );
                                         file.WriteLine( componentHeader + @" \----PFSM ---- BuildString (addToEnd) = " + a?.addToEnd );
@@ -285,8 +285,7 @@ namespace ModCommon
                                 }
 
                                 {
-                                    var a = ( x as HutongGames.PlayMaker.Actions.GetLanguageString );
-                                    if( a != null )
+                                    if (x is GetLanguageString a)
                                     {
                                         file.WriteLine( componentHeader + @" \----PFSM ---- GetLanguageString (Name) = " + a?.Name );
                                         file.WriteLine( componentHeader + @" \----PFSM ---- GetLanguageString (convName) = " + a?.convName );
@@ -299,8 +298,7 @@ namespace ModCommon
                                 }
 
                                 {
-                                    var a = ( x as HutongGames.PlayMaker.Actions.SetStringValue );
-                                    if( a != null )
+                                    if (x is SetStringValue a)
                                     {
                                         file.WriteLine( componentHeader + @" \----PFSM ---- SetStringValue (Name) = " + a?.Name );
                                         file.WriteLine( componentHeader + @" \----PFSM ---- SetStringValue (stringValue) = " + a?.stringValue );
@@ -311,8 +309,7 @@ namespace ModCommon
                                 }
 
                                 {
-                                    var a = ( x as HutongGames.PlayMaker.Actions.SetIntValue );
-                                    if( a != null )
+                                    if (x is SetIntValue a)
                                     {
                                         file.WriteLine( componentHeader + @" \----PFSM ---- SetIntValue (Name) = " + a?.Name );
                                         file.WriteLine( componentHeader + @" \----PFSM ---- SetIntValue (intValue) = " + a?.intValue );
@@ -323,8 +320,7 @@ namespace ModCommon
                                 }
 
                                 {
-                                    var a = ( x as HutongGames.PlayMaker.Actions.SetFloatValue );
-                                    if( a != null )
+                                    if (x is SetFloatValue a)
                                     {
                                         file.WriteLine( componentHeader + @" \----PFSM ---- SetFloatValue (Name) = " + a?.Name );
                                         file.WriteLine( componentHeader + @" \----PFSM ---- SetFloatValue (floatValue) = " + a?.floatValue );
@@ -335,8 +331,7 @@ namespace ModCommon
                                 }
 
                                 {
-                                    var a = ( x as HutongGames.PlayMaker.Actions.SetBoolValue );
-                                    if( a != null )
+                                    if (x is SetBoolValue a)
                                     {
                                         file.WriteLine( componentHeader + @" \----PFSM ---- SetBoolValue (Name) = " + a?.Name );
                                         file.WriteLine( componentHeader + @" \----PFSM ---- SetBoolValue (boolValue) = " + a?.boolValue );
@@ -347,8 +342,7 @@ namespace ModCommon
                                 }
 
                                 {
-                                    var a = ( x as HutongGames.PlayMaker.Actions.ActivateGameObject );
-                                    if( a != null )
+                                    if (x is ActivateGameObject a)
                                     {
                                         file.WriteLine( componentHeader + @" \----PFSM ---- ActivateGameObject (Name) = " + a?.Name );
                                         file.WriteLine( componentHeader + @" \----PFSM ---- ActivateGameObject (GameObject) = " + a?.gameObject?.GameObject );
@@ -358,8 +352,7 @@ namespace ModCommon
                                 }
 
                                 {
-                                    var a = ( x as HutongGames.PlayMaker.Actions.GetPosition );
-                                    if( a != null )
+                                    if (x is GetPosition a)
                                     {
                                         file.WriteLine( componentHeader + @" \----PFSM ---- GetPosition (Name) = " + a?.Name );
                                         file.WriteLine( componentHeader + @" \----PFSM ---- GetPosition (GameObject) = " + a?.gameObject?.GameObject );
@@ -377,8 +370,7 @@ namespace ModCommon
                                 }
 
                                 {
-                                    var a = ( x as HutongGames.PlayMaker.Actions.SetPosition );
-                                    if( a != null )
+                                    if (x is SetPosition a)
                                     {
                                         file.WriteLine( componentHeader + @" \----PFSM ---- SetPosition (Name) = " + a?.Name );
                                         file.WriteLine( componentHeader + @" \----PFSM ---- SetPosition (GameObject) = " + a?.gameObject?.GameObject );
@@ -398,8 +390,7 @@ namespace ModCommon
                                 }
 
                                 {
-                                    var a = ( x as HutongGames.PlayMaker.Actions.SetRotation );
-                                    if( a != null )
+                                    if (x is SetRotation a)
                                     {
                                         file.WriteLine( componentHeader + @" \----PFSM ---- SetRotation (Name) = " + a?.Name );
                                         file.WriteLine( componentHeader + @" \----PFSM ---- SetRotation (GameObject) = " + a?.gameObject?.GameObject );
@@ -420,8 +411,7 @@ namespace ModCommon
                                 }
 
                                 {
-                                    var a = ( x as HutongGames.PlayMaker.Actions.SetScale );
-                                    if( a != null )
+                                    if (x is SetScale a)
                                     {
                                         file.WriteLine( componentHeader + @" \----PFSM ---- SetScale (Name) = " + a?.Name );
                                         file.WriteLine( componentHeader + @" \----PFSM ---- SetScale (GameObject) = " + a?.gameObject?.GameObject );
@@ -443,8 +433,7 @@ namespace ModCommon
                                 }
 
                                 {
-                                    var a = ( x as HutongGames.PlayMaker.Actions.FloatCompare );
-                                    if( a != null )
+                                    if (x is FloatCompare a)
                                     {
                                         file.WriteLine( componentHeader + @" \----PFSM ---- FloatCompare (Name) = " + a?.Name );
                                         file.WriteLine( componentHeader + @" \----PFSM ---- FloatCompare (float1) = " + a?.float1 );
@@ -459,8 +448,7 @@ namespace ModCommon
                                 }
 
                                 {
-                                    var a = ( x as HutongGames.PlayMaker.Actions.IntAdd );
-                                    if( a != null )
+                                    if (x is IntAdd a)
                                     {
                                         file.WriteLine( componentHeader + @" \----PFSM ---- IntAdd (Name) = " + a?.Name );
                                         file.WriteLine( componentHeader + @" \----PFSM ---- IntAdd (add) = " + a?.add );
@@ -472,8 +460,7 @@ namespace ModCommon
                                 }
 
                                 {
-                                    var a = ( x as HutongGames.PlayMaker.Actions.IntCompare );
-                                    if( a != null )
+                                    if (x is IntCompare a)
                                     {
                                         file.WriteLine( componentHeader + @" \----PFSM ---- IntCompare (Name) = " + a?.Name );
                                         file.WriteLine( componentHeader + @" \----PFSM ---- IntCompare (integer1) = " + a?.integer1 );
@@ -486,8 +473,7 @@ namespace ModCommon
                                 }
 
                                 {
-                                    var a = ( x as HutongGames.PlayMaker.Actions.GetFsmInt );
-                                    if( a != null )
+                                    if (x is GetFsmInt a)
                                     {
                                         file.WriteLine( componentHeader + @" \----PFSM ---- GetFsmInt (Name) = " + a?.Name );
                                         file.WriteLine( componentHeader + @" \----PFSM ---- GetFsmInt (GameObject) = " + a?.gameObject?.GameObject );
@@ -500,8 +486,7 @@ namespace ModCommon
                                 }
 
                                 {
-                                    var a = ( x as HutongGames.PlayMaker.Actions.SetFsmBool );
-                                    if( a != null )
+                                    if (x is SetFsmBool a)
                                     {
                                         file.WriteLine( componentHeader + @" \----PFSM ---- SetFsmBool (Name) = " + a?.Name );
                                         file.WriteLine( componentHeader + @" \----PFSM ---- SetFsmBool (GameObject) = " + a?.gameObject?.GameObject );
@@ -513,8 +498,7 @@ namespace ModCommon
                                 }
 
                                 {
-                                    var a = ( x as HutongGames.PlayMaker.Actions.SetFsmString );
-                                    if( a != null )
+                                    if (x is SetFsmString a)
                                     {
                                         file.WriteLine( componentHeader + @" \----PFSM ---- SetFsmString (Name) = " + a?.Name );
                                         file.WriteLine( componentHeader + @" \----PFSM ---- SetFsmString (GameObject) = " + a?.gameObject?.GameObject );
@@ -526,8 +510,7 @@ namespace ModCommon
                                 }
 
                                 {
-                                    var a = ( x as HutongGames.PlayMaker.Actions.SendEventByName );
-                                    if( a != null )
+                                    if (x is SendEventByName a)
                                     {
                                         file.WriteLine( componentHeader + @" \----PFSM ---- SendEventByName (Name) = " + a?.Name );
                                         file.WriteLine( componentHeader + @" \----PFSM ---- SendEventByName (delay) = " + a?.delay );
@@ -543,8 +526,7 @@ namespace ModCommon
                                 }
 
                                 {
-                                    var a = ( x as HutongGames.PlayMaker.Actions.SpawnObjectFromGlobalPool );
-                                    if( a != null )
+                                    if (x is SpawnObjectFromGlobalPool a)
                                     {
                                         file.WriteLine( componentHeader + @" \----PFSM ---- SpawnObjectFromGlobalPool (Name) = " + a?.Name );
                                         file.WriteLine( componentHeader + @" \----PFSM ---- " + a.GetType().Name + PlaymakerTypeToString( a?.gameObject ) );
@@ -556,8 +538,7 @@ namespace ModCommon
                                 }
 
                                 {
-                                    var a = ( x as HutongGames.PlayMaker.Actions.FlingObjectsFromGlobalPool );
-                                    if( a != null )
+                                    if (x is FlingObjectsFromGlobalPool a)
                                     {
                                         file.WriteLine( componentHeader + @" \----PFSM ---- FlingObjectsFromGlobalPool (Name) = " + a?.Name );
                                         file.WriteLine( componentHeader + @" \----PFSM ---- " + a.GetType().Name + PlaymakerTypeToString( a?.gameObject ) );
@@ -570,8 +551,7 @@ namespace ModCommon
                                 }
 
                                 {
-                                    var a = ( x as HutongGames.PlayMaker.Actions.CreateObject );
-                                    if( a != null )
+                                    if (x is CreateObject a)
                                     {
                                         file.WriteLine( componentHeader + @" \----PFSM ---- " + a.GetType().Name + PlaymakerTypeToString( a?.gameObject ) );
                                         file.WriteLine( componentHeader + @" \----PFSM ---- " + a.GetType().Name + PlaymakerTypeToString( a?.position ) );
@@ -584,8 +564,7 @@ namespace ModCommon
                                 }
 
                                 {
-                                    var a = ( x as HutongGames.PlayMaker.Actions.RayCast2d );
-                                    if( a != null )
+                                    if (x is RayCast2d a)
                                     {
                                         file.WriteLine( componentHeader + @" \----PFSM ---- RayCast2d (Name) = " + a?.Name );
                                         file.WriteLine( componentHeader + @" \----PFSM ---- RayCast2d (GameObject) = " + a?.fromGameObject?.GameObject );
@@ -604,8 +583,7 @@ namespace ModCommon
                                 }
 
                                 {
-                                    var a = ( x as HutongGames.PlayMaker.Actions.BoolTest );
-                                    if( a != null )
+                                    if (x is BoolTest a)
                                     {
                                         file.WriteLine( componentHeader + @" \----PFSM ---- BoolTest (Name) = " + a?.Name );
                                         file.WriteLine( componentHeader + @" \----PFSM ---- BoolTest (boolVariable) = " + a?.boolVariable );
@@ -616,8 +594,7 @@ namespace ModCommon
                                 }
 
                                 {
-                                    var a = ( x as HutongGames.PlayMaker.Actions.BoolTestMulti );
-                                    if( a != null )
+                                    if (x is BoolTestMulti a)
                                     {
                                         file.WriteLine( componentHeader + @" \----PFSM ---- BoolTestMulti (Name) = " + a?.Name );
                                         if(a?.boolStates != null)
@@ -634,8 +611,7 @@ namespace ModCommon
                                 }
 
                                 {
-                                    var a = ( x as HutongGames.PlayMaker.Actions.FloatTestToBool );
-                                    if( a != null )
+                                    if (x is FloatTestToBool a)
                                     {
                                         file.WriteLine( componentHeader + @" \----PFSM ---- FloatTestToBool (Name) = " + a?.Name );
                                         file.WriteLine( componentHeader + @" \----PFSM ---- FloatTestToBool (everyFrame) = " + a?.everyFrame );
@@ -651,8 +627,7 @@ namespace ModCommon
                                 }
 
                                 {
-                                    var a = ( x as HutongGames.PlayMaker.Actions.RandomFloat );
-                                    if( a != null )
+                                    if (x is RandomFloat a)
                                     {
                                         file.WriteLine( componentHeader + @" \----PFSM ---- RandomFloat (Name) = " + a?.Name );
                                         file.WriteLine( componentHeader + @" \----PFSM ---- RandomFloat (min) = " + a?.min );
@@ -662,8 +637,7 @@ namespace ModCommon
                                 }
 
                                 {
-                                    var a = ( x as HutongGames.PlayMaker.Actions.FloatOperator );
-                                    if( a != null )
+                                    if (x is FloatOperator a)
                                     {
                                         file.WriteLine( componentHeader + @" \----PFSM ---- " + a.GetType().Name + PlaymakerTypeToString( a?.float1 ) );
                                         file.WriteLine( componentHeader + @" \----PFSM ---- " + a.GetType().Name + PlaymakerTypeToString( a?.float2 ) );
@@ -674,8 +648,7 @@ namespace ModCommon
                                 }
 
                                 {
-                                    var a = ( x as HutongGames.PlayMaker.Actions.FloatMultiply );
-                                    if( a != null )
+                                    if (x is FloatMultiply a)
                                     {
                                         file.WriteLine( componentHeader + @" \----PFSM ---- FloatMultiply (Name) = " + a?.Name );
                                         file.WriteLine( componentHeader + @" \----PFSM ---- FloatMultiply (floatVariable) = " + a?.floatVariable );
@@ -684,8 +657,7 @@ namespace ModCommon
                                 }
 
                                 {
-                                    var a = ( x as HutongGames.PlayMaker.Actions.Tk2dPlayAnimation );
-                                    if( a != null )
+                                    if (x is Tk2dPlayAnimation a)
                                     {
                                         file.WriteLine( componentHeader + @" \----PFSM ---- Tk2dPlayAnimation (Name) = " + a?.Name );
                                         file.WriteLine( componentHeader + @" \----PFSM ---- Tk2dPlayAnimation (animLibName) = " + a?.animLibName );
@@ -694,8 +666,7 @@ namespace ModCommon
                                 }
 
                                 {
-                                    var a = ( x as HutongGames.PlayMaker.Actions.SetVelocity2d );
-                                    if( a != null )
+                                    if (x is SetVelocity2d a)
                                     {
                                         file.WriteLine( componentHeader + @" \----PFSM ---- SetVelocity2d (Name) = " + a?.Name );
                                         file.WriteLine( componentHeader + @" \----PFSM ---- SetVelocity2d (gameObject?.GameObject) = " + a?.gameObject?.GameObject );
@@ -711,8 +682,7 @@ namespace ModCommon
                                 }
 
                                 {
-                                    var a = ( x as HutongGames.PlayMaker.Actions.SetIsKinematic2d );
-                                    if( a != null )
+                                    if (x is SetIsKinematic2d a)
                                     {
                                         file.WriteLine( componentHeader + @" \----PFSM ---- SetIsKinematic2d (Name) = " + a?.Name );
                                         file.WriteLine( componentHeader + @" \----PFSM ---- SetIsKinematic2d (gameObject?.GameObject?.Name) = " + a?.gameObject?.GameObject?.Name );
@@ -721,8 +691,7 @@ namespace ModCommon
                                 }
 
                                 {
-                                    var a = ( x as HutongGames.PlayMaker.Actions.SetCollider );
-                                    if( a != null )
+                                    if (x is SetCollider a)
                                     {
                                         file.WriteLine( componentHeader + @" \----PFSM ---- SetCollider (Name) = " + a?.Name );
                                         file.WriteLine( componentHeader + @" \----PFSM ---- SetCollider (gameObject?.GameObject?.Name) = " + a?.gameObject?.GameObject?.Name );
@@ -731,8 +700,7 @@ namespace ModCommon
                                 }
 
                                 {
-                                    var a = ( x as HutongGames.PlayMaker.Actions.SetMeshRenderer );
-                                    if( a != null )
+                                    if (x is SetMeshRenderer a)
                                     {
                                         file.WriteLine( componentHeader + @" \----PFSM ---- SetMeshRenderer (Name) = " + a?.Name );
                                         file.WriteLine( componentHeader + @" \----PFSM ---- SetMeshRenderer (gameObject?.GameObject?.Name) = " + a?.gameObject?.GameObject?.Name );
@@ -741,8 +709,7 @@ namespace ModCommon
                                 }
 
                                 {
-                                    var a = ( x as HutongGames.PlayMaker.Actions.SetGravity2dScale );
-                                    if( a != null )
+                                    if (x is SetGravity2dScale a)
                                     {
                                         file.WriteLine( componentHeader + @" \----PFSM ---- SetGravity2dScale (Name) = " + a?.Name );
                                         file.WriteLine( componentHeader + @" \----PFSM ---- SetGravity2dScale (gameObject?.GameObject?.Name) = " + a?.gameObject?.GameObject?.Name );
@@ -751,8 +718,7 @@ namespace ModCommon
                                 }
 
                                 {
-                                    var a = ( x as HutongGames.PlayMaker.Actions.GetVelocity2d );
-                                    if( a != null )
+                                    if (x is GetVelocity2d a)
                                     {
                                         file.WriteLine( componentHeader + @" \----PFSM ---- GetVelocity2d (Name) = " + a?.Name );
                                         file.WriteLine( componentHeader + @" \----PFSM ---- GetVelocity2d (gameObject?.GameObject?.Name) = " + a?.gameObject?.GameObject?.Name );
@@ -765,8 +731,7 @@ namespace ModCommon
                                 }
 
                                 {
-                                    var a = ( x as HutongGames.PlayMaker.Actions.GetPlayerDataBool );
-                                    if( a != null )
+                                    if (x is GetPlayerDataBool a)
                                     {
                                         file.WriteLine( componentHeader + @" \----PFSM ---- GetPlayerDataBool (Name) = " + a?.Name );
                                         file.WriteLine( componentHeader + @" \----PFSM ---- GetPlayerDataBool (boolName) = " + a?.boolName );
@@ -775,8 +740,7 @@ namespace ModCommon
                                 }
 
                                 {
-                                    var a = ( x as HutongGames.PlayMaker.Actions.GetPlayerDataInt );
-                                    if( a != null )
+                                    if (x is GetPlayerDataInt a)
                                     {
                                         file.WriteLine( componentHeader + @" \----PFSM ---- GetPlayerDataInt (Name) = " + a?.Name );
                                         file.WriteLine( componentHeader + @" \----PFSM ---- GetPlayerDataInt (boolName) = " + a?.intName );
@@ -785,8 +749,7 @@ namespace ModCommon
                                 }
 
                                 {
-                                    var a = ( x as HutongGames.PlayMaker.Actions.SetPlayerDataBool );
-                                    if( a != null )
+                                    if (x is SetPlayerDataBool a)
                                     {
                                         file.WriteLine( componentHeader + @" \----PFSM ---- SetPlayerDataBool (Name) = " + a?.Name );
                                         file.WriteLine( componentHeader + @" \----PFSM ---- SetPlayerDataInt (boolName) = " + a?.value );
@@ -796,8 +759,7 @@ namespace ModCommon
                                 }
 
                                 {
-                                    var a = ( x as HutongGames.PlayMaker.Actions.SetPlayerDataInt );
-                                    if( a != null )
+                                    if (x is SetPlayerDataInt a)
                                     {
                                         file.WriteLine( componentHeader + @" \----PFSM ---- SetPlayerDataInt (Name) = " + a?.Name );
                                         file.WriteLine( componentHeader + @" \----PFSM ---- SetPlayerDataInt (boolName) = " + a?.value );
@@ -807,8 +769,7 @@ namespace ModCommon
                                 }
 
                                 {
-                                    var a = ( x as HutongGames.PlayMaker.Actions.SetFsmGameObject );
-                                    if( a != null )
+                                    if (x is SetFsmGameObject a)
                                     {
                                         file.WriteLine( componentHeader + @" \----PFSM ---- SetFsmGameObject (Name) = " + a?.Name );
                                         file.WriteLine( componentHeader + @" \----PFSM ---- SetFsmGameObject (fsmName) = " + a?.fsmName );
@@ -819,8 +780,7 @@ namespace ModCommon
                                 }
 
                                 {
-                                    var a = ( x as HutongGames.PlayMaker.Actions.FlingObject );
-                                    if( a != null )
+                                    if (x is FlingObject a)
                                     {
                                         file.WriteLine( componentHeader + @" \----PFSM ---- FlingObject (Name) = " + a?.Name );
                                         file.WriteLine( componentHeader + @" \----PFSM ---- FlingObject (flungObject?.GameObject?.Name) = " + a?.flungObject?.GameObject?.Name );
@@ -828,8 +788,7 @@ namespace ModCommon
                                 }
 
                                 {
-                                    var a = ( x as HutongGames.PlayMaker.Actions.GameObjectIsNull );
-                                    if( a != null )
+                                    if (x is GameObjectIsNull a)
                                     {
                                         file.WriteLine( componentHeader + @" \----PFSM ---- GameObjectIsNull (Name) = " + a?.Name );
                                         file.WriteLine( componentHeader + @" \----PFSM ---- GameObjectIsNull (gameObject?.Name) = " + a?.gameObject?.Name );
@@ -839,8 +798,7 @@ namespace ModCommon
                                 }
 
                                 {
-                                    var a = ( x as HutongGames.PlayMaker.Actions.CallMethodProper );
-                                    if( a != null )
+                                    if (x is CallMethodProper a)
                                     {
                                         file.WriteLine( componentHeader + @" \----PFSM ---- " + a.GetType().Name + PlaymakerTypeToString( a?.behaviour ) );
                                         file.WriteLine( componentHeader + @" \----PFSM ---- " + a.GetType().Name + PlaymakerTypeToString( a?.gameObject?.GameObject ) );
@@ -851,8 +809,7 @@ namespace ModCommon
                                 }
 
                                 {
-                                    var a = ( x as HutongGames.PlayMaker.Actions.SetBoxCollider2DSizeVector );
-                                    if( a != null )
+                                    if (x is SetBoxCollider2DSizeVector a)
                                     {
                                         file.WriteLine( componentHeader + @" \----PFSM ---- " + a.GetType().Name + PlaymakerTypeToString( a?.gameObject1?.GameObject ) );
                                         file.WriteLine( componentHeader + @" \----PFSM ---- " + a.GetType().Name + PlaymakerTypeToString( a?.offset ) );
@@ -861,8 +818,7 @@ namespace ModCommon
                                 }
 
                                 {
-                                    var a = ( x as HutongGames.PlayMaker.Actions.SendRandomEvent );
-                                    if( a != null )
+                                    if (x is SendRandomEvent a)
                                     {
                                         file.WriteLine( componentHeader + @" \----PFSM ---- " + a.GetType().Name + PlaymakerTypeToString( a?.delay ) );
                                         if( a?.events != null )
@@ -875,8 +831,7 @@ namespace ModCommon
                                 }
 
                                 {
-                                    var a = ( x as HutongGames.PlayMaker.Actions.SendRandomEventV2 );
-                                    if( a != null )
+                                    if (x is SendRandomEventV2 a)
                                     {
                                         foreach( var e in a?.trackingInts )
                                         {
@@ -901,8 +856,7 @@ namespace ModCommon
                                     }
                                 }
                                 {
-                                    var a = ( x as HutongGames.PlayMaker.Actions.SendRandomEventV3 );
-                                    if( a != null )
+                                    if (x is SendRandomEventV3 a)
                                     {
                                         if( a?.trackingInts != null )
                                             foreach( var e in a?.trackingInts )
@@ -941,8 +895,7 @@ namespace ModCommon
                                 }
 
                                 {
-                                    var a = ( x as HutongGames.PlayMaker.Actions.WaitRandom );
-                                    if( a != null )
+                                    if (x is WaitRandom a)
                                     {
                                         file.WriteLine( componentHeader + @" \----PFSM ---- " + a.GetType().Name + PlaymakerTypeToString( "finishEvent", a?.finishEvent?.Name ) );
                                         file.WriteLine( componentHeader + @" \----PFSM ---- " + a.GetType().Name + PlaymakerTypeToString( "realTime", a?.realTime ) );
@@ -952,8 +905,7 @@ namespace ModCommon
                                 }
 
                                 {
-                                    var a = ( x as HutongGames.PlayMaker.Actions.Wait );
-                                    if( a != null )
+                                    if (x is Wait a)
                                     {
                                         file.WriteLine( componentHeader + @" \----PFSM ---- " + a.GetType().Name + PlaymakerTypeToString( "finishEvent", a?.finishEvent?.Name ) );
                                         file.WriteLine( componentHeader + @" \----PFSM ---- " + a.GetType().Name + PlaymakerTypeToString( "realTime", a?.realTime ) );
@@ -962,8 +914,7 @@ namespace ModCommon
                                 }
 
                                 {
-                                    var a = ( x as HutongGames.PlayMaker.Actions.Tk2dPlayAnimationWithEvents );
-                                    if( a != null )
+                                    if (x is Tk2dPlayAnimationWithEvents a)
                                     {
                                         file.WriteLine( componentHeader + @" \----PFSM ---- " + a.GetType().Name + PlaymakerTypeToString( "animationCompleteEvent", a?.animationCompleteEvent?.Name ) );
                                         file.WriteLine( componentHeader + @" \----PFSM ---- " + a.GetType().Name + PlaymakerTypeToString( "animationTriggerEvent", a?.animationTriggerEvent?.Name ) );
@@ -973,8 +924,7 @@ namespace ModCommon
                                 }
 
                                 {
-                                    var a = ( x as HutongGames.PlayMaker.Actions.AudioPlayerOneShot );
-                                    if( a != null )
+                                    if (x is AudioPlayerOneShot a)
                                     {
                                         file.WriteLine( componentHeader + @" \----PFSM ---- " + a.GetType().Name + PlaymakerTypeToString( a?.audioPlayer ) );
                                         file.WriteLine( componentHeader + @" \----PFSM ---- " + a.GetType().Name + PlaymakerTypeToString( a?.delay ) );
@@ -993,8 +943,7 @@ namespace ModCommon
                                 }
 
                                 {
-                                    var a = ( x as HutongGames.PlayMaker.Actions.AudioPlaySimple );
-                                    if( a != null )
+                                    if (x is AudioPlaySimple a)
                                     {
                                         file.WriteLine( componentHeader + @" \----PFSM ---- " + a.GetType().Name + PlaymakerTypeToString( a?.volume ) );
                                         file.WriteLine( componentHeader + @" \----PFSM ---- " + a.GetType().Name + PlaymakerTypeToString( a?.gameObject?.GameObject ) );
@@ -1003,8 +952,7 @@ namespace ModCommon
                                 }
 
                                 {
-                                    var a = ( x as HutongGames.PlayMaker.Actions.GetScale );
-                                    if( a != null )
+                                    if (x is GetScale a)
                                     {
                                         file.WriteLine( componentHeader + @" \----PFSM ---- " + a.GetType().Name + PlaymakerTypeToString( "everyFrame",a?.everyFrame ) );
                                         file.WriteLine( componentHeader + @" \----PFSM ---- " + a.GetType().Name + PlaymakerTypeToString( a?.gameObject?.GameObject ) );
@@ -1017,8 +965,7 @@ namespace ModCommon
                                 }
 
                                 {
-                                    var a = ( x as HutongGames.PlayMaker.Actions.CheckCollisionSideEnter );
-                                    if( a != null )
+                                    if (x is CheckCollisionSideEnter a)
                                     {
                                         file.WriteLine( componentHeader + @" \----PFSM ---- " + a.GetType().Name + PlaymakerTypeToString( a?.ignoreTriggers ) );
                                         file.WriteLine( componentHeader + @" \----PFSM ---- " + a.GetType().Name + PlaymakerTypeToString( a?.bottomHit ) );
@@ -1035,8 +982,7 @@ namespace ModCommon
                                 }
 
                                 {
-                                    var a = ( x as HutongGames.PlayMaker.Actions.CheckCollisionSide );
-                                    if( a != null )
+                                    if (x is CheckCollisionSide a)
                                     {
                                         file.WriteLine( componentHeader + @" \----PFSM ---- " + a.GetType().Name + PlaymakerTypeToString( a?.ignoreTriggers ) );
                                         file.WriteLine( componentHeader + @" \----PFSM ---- " + a.GetType().Name + PlaymakerTypeToString( a?.bottomHit ) );
@@ -1053,8 +999,7 @@ namespace ModCommon
                                 }
 
                                 {
-                                    var a = ( x as HutongGames.PlayMaker.Actions.DecelerateXY );
-                                    if( a != null )
+                                    if (x is DecelerateXY a)
                                     {
                                         file.WriteLine( componentHeader + @" \----PFSM ---- " + a.GetType().Name + PlaymakerTypeToString( a?.decelerationX ) );
                                         file.WriteLine( componentHeader + @" \----PFSM ---- " + a.GetType().Name + PlaymakerTypeToString( a?.decelerationY ) );
@@ -1063,8 +1008,7 @@ namespace ModCommon
                                 }
 
                                 {
-                                    var a = ( x as HutongGames.PlayMaker.Actions.DecelerateV2 );
-                                    if( a != null )
+                                    if (x is DecelerateV2 a)
                                     {
                                         file.WriteLine( componentHeader + @" \----PFSM ---- " + a.GetType().Name + PlaymakerTypeToString( a?.deceleration ) );
                                         file.WriteLine( componentHeader + @" \----PFSM ---- " + a.GetType().Name + PlaymakerTypeToString( a?.gameObject?.GameObject ) );
@@ -1072,8 +1016,7 @@ namespace ModCommon
                                 }
 
                                 {
-                                    var a = ( x as HutongGames.PlayMaker.Actions.FaceObject );
-                                    if( a != null )
+                                    if (x is FaceObject a)
                                     {
                                         file.WriteLine( componentHeader + @" \----PFSM ---- " + a.GetType().Name + PlaymakerTypeToString( a?.objectA ) );
                                         file.WriteLine( componentHeader + @" \----PFSM ---- " + a.GetType().Name + PlaymakerTypeToString( a?.objectB ) );
@@ -1085,8 +1028,7 @@ namespace ModCommon
                                 }
 
                                 {
-                                    var a = ( x as HutongGames.PlayMaker.Actions.FloatSubtract );
-                                    if( a != null )
+                                    if (x is FloatSubtract a)
                                     {
                                         file.WriteLine( componentHeader + @" \----PFSM ---- " + a.GetType().Name + PlaymakerTypeToString( "everyFrame", a?.everyFrame ) );
                                         file.WriteLine( componentHeader + @" \----PFSM ---- " + a.GetType().Name + PlaymakerTypeToString( a?.floatVariable ) );
@@ -1096,8 +1038,7 @@ namespace ModCommon
                                 }
 
                                 {
-                                    var a = ( x as HutongGames.PlayMaker.Actions.FloatInRange );
-                                    if( a != null )
+                                    if (x is FloatInRange a)
                                     {
                                         file.WriteLine( componentHeader + @" \----PFSM ---- " + a.GetType().Name + PlaymakerTypeToString( "everyFrame", a?.everyFrame ) );
                                         file.WriteLine( componentHeader + @" \----PFSM ---- " + a.GetType().Name + PlaymakerTypeToString( a?.floatVariable ) );
@@ -1110,16 +1051,14 @@ namespace ModCommon
                                 }
 
                                 {
-                                    var a = ( x as HutongGames.PlayMaker.Actions.NextFrameEvent );
-                                    if( a != null )
+                                    if (x is NextFrameEvent a)
                                     {
                                         file.WriteLine( componentHeader + @" \----PFSM ---- " + a.GetType().Name + PlaymakerTypeToString( "sendEvent", a?.sendEvent?.Name ) );
                                     }
                                 }
 
                                 {
-                                    var a = ( x as HutongGames.PlayMaker.Actions.SetBoxColliderTrigger );
-                                    if( a != null )
+                                    if (x is SetBoxColliderTrigger a)
                                     {
                                         file.WriteLine( componentHeader + @" \----PFSM ---- " + a.GetType().Name + PlaymakerTypeToString( a?.gameObject?.GameObject ) );
                                         file.WriteLine( componentHeader + @" \----PFSM ---- " + a.GetType().Name + PlaymakerTypeToString( "GameObject value", a?.gameObject?.GameObject?.Value ) );
@@ -1130,8 +1069,7 @@ namespace ModCommon
                                 }
 
                                 {
-                                    var a = ( x as HutongGames.PlayMaker.Actions.FireAtTarget );
-                                    if( a != null )
+                                    if (x is FireAtTarget a)
                                     {
                                         file.WriteLine( componentHeader + @" \----PFSM ---- " + a.GetType().Name + PlaymakerTypeToString( a?.gameObject?.GameObject ) );
                                         file.WriteLine( componentHeader + @" \----PFSM ---- " + a.GetType().Name + PlaymakerTypeToString( "GameObject value", a?.gameObject?.GameObject?.Value ) );
@@ -1150,8 +1088,7 @@ namespace ModCommon
                                 }
 
                                 {
-                                    var a = ( x as HutongGames.PlayMaker.Actions.PlayParticleEmitter );
-                                    if( a != null )
+                                    if (x is PlayParticleEmitter a)
                                     {
                                         file.WriteLine( componentHeader + @" \----PFSM ---- " + a.GetType().Name + PlaymakerTypeToString( a?.gameObject?.GameObject ) );
                                         file.WriteLine( componentHeader + @" \----PFSM ---- " + a.GetType().Name + PlaymakerTypeToString( "GameObject value", a?.gameObject?.GameObject?.Value ) );
@@ -1162,8 +1099,7 @@ namespace ModCommon
                                 }
 
                                 {
-                                    var a = ( x as HutongGames.PlayMaker.Actions.SetVelocityAsAngle );
-                                    if( a != null )
+                                    if (x is SetVelocityAsAngle a)
                                     {
                                         file.WriteLine( componentHeader + @" \----PFSM ---- " + a.GetType().Name + PlaymakerTypeToString( a?.angle ) );
                                         file.WriteLine( componentHeader + @" \----PFSM ---- " + a.GetType().Name + PlaymakerTypeToString( a?.speed ) );
@@ -1176,8 +1112,7 @@ namespace ModCommon
                                 }
 
                                 {
-                                    var a = ( x as HutongGames.PlayMaker.Actions.SendEvent );
-                                    if( a != null )
+                                    if (x is SendEvent a)
                                     {
                                         file.WriteLine( componentHeader + @" \----PFSM ---- " + a.GetType().Name + PlaymakerTypeToString( "sendEvent", a?.sendEvent?.Name ) );
                                         file.WriteLine( componentHeader + @" \----PFSM ---- " + a.GetType().Name + PlaymakerTypeToString( a?.delay ) );
@@ -1185,8 +1120,7 @@ namespace ModCommon
                                 }
 
                                 {
-                                    var a = ( x as HutongGames.PlayMaker.Actions.AudioPlayInState );
-                                    if( a != null )
+                                    if (x is AudioPlayInState a)
                                     {
                                         file.WriteLine( componentHeader + @" \----PFSM ---- " + a.GetType().Name + PlaymakerTypeToString(a?.volume) );
                                         file.WriteLine( componentHeader + @" \----PFSM ---- " + a.GetType().Name + PlaymakerTypeToString(a?.gameObject?.GameObject ) );
@@ -1194,8 +1128,7 @@ namespace ModCommon
                                 }
 
                                 {
-                                    var a = ( x as HutongGames.PlayMaker.Actions.AudioPlayerOneShotSingle );
-                                    if( a != null )
+                                    if (x is AudioPlayerOneShotSingle a)
                                     {
                                         file.WriteLine( componentHeader + @" \----PFSM ---- " + a.GetType().Name + PlaymakerTypeToString( a?.volume ) );
                                         file.WriteLine( componentHeader + @" \----PFSM ---- " + a.GetType().Name + PlaymakerTypeToString( "a?.audioClip", a?.audioClip ) );
@@ -1214,8 +1147,7 @@ namespace ModCommon
                                 }
 
                                 {
-                                    var a = ( x as HutongGames.PlayMaker.Actions.TransitionToAudioSnapshot );
-                                    if( a != null )
+                                    if (x is TransitionToAudioSnapshot a)
                                     {
                                         file.WriteLine( componentHeader + @" \----PFSM ---- " + a.GetType().Name + PlaymakerTypeToString( "snapshot? ", a?.snapshot ) );
                                         file.WriteLine( componentHeader + @" \----PFSM ---- " + a.GetType().Name + PlaymakerTypeToString( "snapshot?. type", a?.snapshot?.GetType()?.Name ) );
@@ -1225,8 +1157,7 @@ namespace ModCommon
                                 }
 
                                 {
-                                    var a = ( x as HutongGames.PlayMaker.Actions.ApplyMusicCue );
-                                    if( a != null )
+                                    if (x is ApplyMusicCue a)
                                     {
                                         file.WriteLine( componentHeader + @" \----PFSM ---- " + a.GetType().Name + PlaymakerTypeToString( a?.delayTime ) );
                                         file.WriteLine( componentHeader + @" \----PFSM ---- " + a.GetType().Name + PlaymakerTypeToString( "musicCue?.Name", a?.musicCue?.Name ) );
@@ -1237,8 +1168,7 @@ namespace ModCommon
                                 }
 
                                 {
-                                    var a = ( x as HutongGames.PlayMaker.Actions.SetGameObject );
-                                    if( a != null )
+                                    if (x is SetGameObject a)
                                     {
                                         file.WriteLine( componentHeader + @" \----PFSM ---- " + a.GetType().Name + PlaymakerTypeToString( "everyFrame", a?.everyFrame ) );
                                         file.WriteLine( componentHeader + @" \----PFSM ---- " + a.GetType().Name + PlaymakerTypeToString( a?.gameObject ) );
@@ -1247,8 +1177,7 @@ namespace ModCommon
                                 }
 
                                 {
-                                    var a = ( x as HutongGames.PlayMaker.Actions.CheckTargetDirection );
-                                    if( a != null )
+                                    if (x is CheckTargetDirection a)
                                     {
                                         file.WriteLine( componentHeader + @" \----PFSM ---- " + a.GetType().Name + PlaymakerTypeToString( a?.gameObject?.GameObject ) );
                                         file.WriteLine( componentHeader + @" \----PFSM ---- " + a.GetType().Name + PlaymakerTypeToString( a?.target ) );
@@ -1264,8 +1193,7 @@ namespace ModCommon
                                 }
 
                                 {
-                                    var a = ( x as HutongGames.PlayMaker.Actions.GetAngleToTarget2D );
-                                    if( a != null )
+                                    if (x is GetAngleToTarget2D a)
                                     {
                                         file.WriteLine( componentHeader + @" \----PFSM ---- " + a.GetType().Name + PlaymakerTypeToString( a?.gameObject?.GameObject ) );
                                         file.WriteLine( componentHeader + @" \----PFSM ---- " + a.GetType().Name + PlaymakerTypeToString( a?.target ) );
@@ -1280,8 +1208,7 @@ namespace ModCommon
 
                                 
                                 {
-                                    var a = ( x as HutongGames.PlayMaker.Actions.FaceAngle );
-                                    if( a != null )
+                                    if (x is FaceAngle a)
                                     {
                                         file.WriteLine( componentHeader + @" \----PFSM ---- " + a.GetType().Name + PlaymakerTypeToString( a?.gameObject?.GameObject ) );
                                         file.WriteLine( componentHeader + @" \----PFSM ---- " + a.GetType().Name + PlaymakerTypeToString( "GameObject value", a?.gameObject?.GameObject?.Value ) );
@@ -1293,8 +1220,7 @@ namespace ModCommon
                                 }
 
                                 {
-                                    var a = ( x as HutongGames.PlayMaker.Actions.FaceAngleV2 );
-                                    if( a != null )
+                                    if (x is FaceAngleV2 a)
                                     {
                                         file.WriteLine( componentHeader + @" \----PFSM ---- " + a.GetType().Name + PlaymakerTypeToString( a?.gameObject?.GameObject ) );
                                         file.WriteLine( componentHeader + @" \----PFSM ---- " + a.GetType().Name + PlaymakerTypeToString( "GameObject value", a?.gameObject?.GameObject?.Value ) );
@@ -1307,8 +1233,7 @@ namespace ModCommon
                                 }
 
                                 {
-                                    var a = ( x as HutongGames.PlayMaker.Actions.SetParent );
-                                    if( a != null )
+                                    if (x is SetParent a)
                                     {
                                         file.WriteLine( componentHeader + @" \----PFSM ---- " + a.GetType().Name + PlaymakerTypeToString( a?.gameObject?.GameObject ) );
                                         file.WriteLine( componentHeader + @" \----PFSM ---- " + a.GetType().Name + PlaymakerTypeToString( "GameObject value", a?.gameObject?.GameObject?.Value ) );
@@ -1321,8 +1246,7 @@ namespace ModCommon
                                 }
 
                                 {
-                                    var a = ( x as HutongGames.PlayMaker.Actions.Tk2dPlayFrame );
-                                    if( a != null )
+                                    if (x is Tk2dPlayFrame a)
                                     {
                                         file.WriteLine( componentHeader + @" \----PFSM ---- " + a.GetType().Name + PlaymakerTypeToString( a?.gameObject?.GameObject ) );
                                         file.WriteLine( componentHeader + @" \----PFSM ---- " + a.GetType().Name + PlaymakerTypeToString( "GameObject value", a?.gameObject?.GameObject?.Value ) );
@@ -1333,8 +1257,7 @@ namespace ModCommon
                                 }
 
                                 {
-                                    var a = ( x as HutongGames.PlayMaker.Actions.Tk2dWatchAnimationEvents );
-                                    if( a != null )
+                                    if (x is Tk2dWatchAnimationEvents a)
                                     {
                                         file.WriteLine( componentHeader + @" \----PFSM ---- " + a.GetType().Name + PlaymakerTypeToString( a?.gameObject?.GameObject ) );
                                         file.WriteLine( componentHeader + @" \----PFSM ---- " + a.GetType().Name + PlaymakerTypeToString( "GameObject value", a?.gameObject?.GameObject?.Value ) );
@@ -1346,8 +1269,7 @@ namespace ModCommon
                                 }
 
                                 {
-                                    var a = ( x as HutongGames.PlayMaker.Actions.iTweenMoveTo );
-                                    if( a != null )
+                                    if (x is iTweenMoveTo a)
                                     {
                                         file.WriteLine( componentHeader + @" \----PFSM ---- " + a.GetType().Name + PlaymakerTypeToString( a?.gameObject?.GameObject ) );
                                         file.WriteLine( componentHeader + @" \----PFSM ---- " + a.GetType().Name + PlaymakerTypeToString( "GameObject value", a?.gameObject?.GameObject?.Value ) );
@@ -1385,8 +1307,7 @@ namespace ModCommon
                                 }
 
                                 {
-                                    var a = ( x as HutongGames.PlayMaker.Actions.iTweenScaleTo );
-                                    if( a != null )
+                                    if (x is iTweenScaleTo a)
                                     {
                                         file.WriteLine( componentHeader + @" \----PFSM ---- " + a.GetType().Name + PlaymakerTypeToString( a?.gameObject?.GameObject ) );
                                         file.WriteLine( componentHeader + @" \----PFSM ---- " + a.GetType().Name + PlaymakerTypeToString( "GameObject value", a?.gameObject?.GameObject?.Value ) );
@@ -1409,8 +1330,7 @@ namespace ModCommon
                                 }
 
                                 {
-                                    var a = ( x as HutongGames.PlayMaker.Actions.GetRotation );
-                                    if( a != null )
+                                    if (x is GetRotation a)
                                     {
                                         file.WriteLine( componentHeader + @" \----PFSM ---- " + a.GetType().Name + PlaymakerTypeToString( a?.gameObject?.GameObject ) );
                                         file.WriteLine( componentHeader + @" \----PFSM ---- " + a.GetType().Name + PlaymakerTypeToString( "GameObject value", a?.gameObject?.GameObject?.Value ) );
