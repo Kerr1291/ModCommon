@@ -10,7 +10,7 @@ using UnityEngine;
 
 namespace ModCommon
 {
-    public class CustomEnemy : MonoBehaviour
+    public class CustomEnemySpeed : MonoBehaviour
     {
         public struct AnimationData
         {
@@ -36,15 +36,6 @@ namespace ModCommon
             public float WaitTimeInverseFactor;
 
             public float DefaultWaitTime;
-            
-            /*
-            public WaitData(string fsmName, string fsmStateName, float waitTimeInverseFactor)
-            {
-                FSMName = fsmName;
-                FSMStateName = fsmStateName;
-                WaitTimeInverseFactor = waitTimeInverseFactor;
-                DefaultWaitTime = -1f;
-            }*/
         }
 
 
@@ -52,7 +43,6 @@ namespace ModCommon
 
         public bool active { get; private set; } = false;
         public bool speedModActive { get; private set; } = false;
-        public bool stunModActive { get; private set; } = false;
         public double danceSpeed { get; private set; } = 2.0;
 
         public List<AnimationData> speedModifyAnimations { get; private set; } = new List<AnimationData>();
@@ -64,10 +54,96 @@ namespace ModCommon
         private readonly Dictionary<string, tk2dSpriteAnimationClip> cachedAnimationClips = new Dictionary<string, tk2dSpriteAnimationClip>();
 
         public tk2dSpriteAnimator cachedAnimator;
+        public HealthManager cachedHealthManager;
 
         private const float epsilon = 0.0001f;
 
         private bool waitingForLoad = false;
+
+        public int damageDone { get; private set; } = 0;
+        private int maxHP = 0;
+
+        private void Update()
+        {
+            if (!active)
+                return;
+            
+            if (cachedHealthManager == null)
+            {
+                cachedHealthManager = gameObject.GetComponent<HealthManager>();
+                if (cachedHealthManager == null)
+                {
+                    active = false;
+                    throw new NullReferenceException("Unable to load health manager." +
+                                                     " Please set manually, or add a HealthManager to this gameobject." +
+                                                     " Setting CustomEnemy to inactive.");
+                }
+
+                maxHP = cachedHealthManager.hp;
+            }
+            damageDone = maxHP - cachedHealthManager.hp;
+            
+        }
+
+        public void OverrideDamageDone(int damage)
+        {
+            if (cachedHealthManager != null)
+            {
+                damageDone = damage;
+                if (damageDone < maxHP)
+                {
+                    cachedHealthManager.hp = (maxHP - damageDone);
+                }
+                else
+                {
+                    cachedHealthManager.Die(null, AttackTypes.Generic, true);
+                }
+            }
+            else
+            {
+                cachedHealthManager = gameObject.GetComponent<HealthManager>();
+                if (cachedHealthManager == null)
+                {
+                    throw new NullReferenceException("Unable to load health manager." +
+                                                     " Please set manually, or add a HealthManager to this gameobject.");
+                }
+
+                maxHP = cachedHealthManager.hp;
+                OverrideDamageDone(damage);
+            }            
+        }
+
+        public void SetEnemyMaxHealth(int health)
+        {
+            if (cachedHealthManager != null)
+            {
+                maxHP = health;
+                if (damageDone < health)
+                {
+                    cachedHealthManager.hp = (health - damageDone);
+                }
+                else
+                {
+                    cachedHealthManager.Die(null, AttackTypes.Generic, true);
+                }
+            }
+            else
+            {
+                cachedHealthManager = gameObject.GetComponent<HealthManager>();
+                if (cachedHealthManager == null)
+                {
+                    throw new NullReferenceException("Unable to load health manager." +
+                                                     " Please set manually, or add a HealthManager to this gameobject.");
+                }
+                SetEnemyMaxHealth(health);
+            }
+        }
+
+        public void SetHealthManager(HealthManager h)
+        {
+            cachedHealthManager = h;
+            maxHP = h.hp;
+        }
 
         public void updateDanceSpeed(double newDanceSpeed)
         {
