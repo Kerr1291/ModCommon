@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using HutongGames.PlayMaker;
 using HutongGames.PlayMaker.Actions;
 using ModCommon.Util;
@@ -17,7 +18,12 @@ namespace ModCommon
             public string AnimationName;
             public float AnimationSpeedFactor;
 
-            public float DefaultAnimationSpeed;
+            public float DefaultAnimationSpeed { get; private set; }
+
+            public void SetDefaultAnimationSpeed(float defaultAnimSpeed)
+            {
+                DefaultAnimationSpeed = defaultAnimSpeed;
+            }
         }
 
         public struct WaitData
@@ -35,7 +41,12 @@ namespace ModCommon
             // For faster enemies, set a value less than 1, ofc.
             public float WaitTimeInverseFactor;
 
-            public float DefaultWaitTime;
+            public float DefaultWaitTime { get; private set; }
+
+            public void SetDefaultWaitTime(float defaultWaitTime)
+            {
+                DefaultWaitTime = defaultWaitTime;
+            }
         }
 
 
@@ -54,15 +65,18 @@ namespace ModCommon
         private readonly Dictionary<string, tk2dSpriteAnimationClip> cachedAnimationClips = new Dictionary<string, tk2dSpriteAnimationClip>();
 
         public tk2dSpriteAnimator cachedAnimator;
-        public HealthManager cachedHealthManager;
+        public HealthManager cachedHealthManager { get; protected set; }
 
-        private const float epsilon = 0.0001f;
+        protected const float epsilon = 0.0001f;
 
         private bool waitingForLoad = false;
 
-        public int damageDone { get; private set; } = 0;
-        private int maxHP = 0;
-
+        public int damageDone { get; protected set; } = 0;
+        protected int maxHP = 0;
+        
+        // Update records the damage you have done to the enemy, which may be useful to other classes.
+        // For example, consider a custom radiance fight. After 400 damage, you may wish to set the enemy state to
+        // progress the fight. This lets you do that.
         private void Update()
         {
             if (!active)
@@ -73,7 +87,7 @@ namespace ModCommon
                 cachedHealthManager = gameObject.GetComponent<HealthManager>();
                 if (cachedHealthManager == null)
                 {
-                    active = false;
+                    SetActive(false);
                     throw new NullReferenceException("Unable to load health manager." +
                                                      " Please set manually, or add a HealthManager to this gameobject." +
                                                      " Setting CustomEnemy to inactive.");
@@ -84,7 +98,10 @@ namespace ModCommon
             damageDone = maxHP - cachedHealthManager.hp;
             
         }
-
+        
+        // This directly sets the damage done to a new value.
+        // It also reduces the enemy health such that this damage done stat is accurate
+        // So long as enemies cannot heal this behavior makes sense.
         public void OverrideDamageDone(int damage)
         {
             if (cachedHealthManager != null)
@@ -112,7 +129,9 @@ namespace ModCommon
                 OverrideDamageDone(damage);
             }            
         }
-
+        
+        // This sets the enemy's maximum health. Their actual health will be based on the damage that you have
+        // done to them.
         public void SetEnemyMaxHealth(int health)
         {
             if (cachedHealthManager != null)
@@ -138,13 +157,23 @@ namespace ModCommon
                 SetEnemyMaxHealth(health);
             }
         }
-
+        
+        // If the health manager is not on the base game object, call this class before doing anything else to
+        // set the health manager. This is required for this class to operate normally, so if no health manager exists
+        // just add one to the gameobject.
         public void SetHealthManager(HealthManager h)
         {
             cachedHealthManager = h;
             maxHP = h.hp;
         }
-
+        
+        // Sets the new dance speed. This affects how fast the animations are played. A value of 1.0 plays animations
+        // at normal speed. A value of 2.0 uses your modded speeds. A value of 3.0 uses twice the difference between
+        // your modded speeds and the normal speeds, plus the normal speeds. A graph and detailed explanation of this
+        // behavior is available in Hollow Knight modding documentation.
+        
+        // The default dance speed is 2.0 which means that it will use all your animation and wait time factors
+        // as they are written without any changes.
         public void updateDanceSpeed(double newDanceSpeed)
         {
             if (newDanceSpeed > 0.0)
@@ -161,11 +190,18 @@ namespace ModCommon
             StartCoroutine(_StartUpdateSpeeds());
         }
         
-        public void SetActive()
+        // Calling this function enables the damage tracking functionality in the form of damageDone.
+        // If you are using InfiniteEnemy it also will make the enemy infinite without changing their speeds.
+        public void SetActive(bool activeState = true)
         {
-            active = true;
+            active = activeState;
+            if (!activeState)
+            {
+                RestoreOriginalSpeed();
+            }
         }
-
+        
+        // Call this function when you wish to apply all of the speeds you've added.
         public void StartSpeedMod()
         {
             SetActive();
@@ -173,13 +209,15 @@ namespace ModCommon
             StartCoroutine(_StartUpdateSpeeds());
         }
 
+        // Call this function when you wish to restore all of the speeds to their default values. Or at least
+        // the values that were loaded when this component was added to the game object in question.
         public void RestoreOriginalSpeed()
         {
             speedModActive = false;
             StartCoroutine(_StartUpdateSpeeds());
         }
         
-        // waits for speeds to not be null before updating.
+        // Waits for speeds to not be null before updating.
         private IEnumerator _StartUpdateSpeeds()
         {
             while (waitingForLoad)
@@ -191,6 +229,19 @@ namespace ModCommon
             _UpdateWaits();
         }
 
+        // Removes the animation from the list, if it exists. Returns true if it found and removed it.
+        public bool RemoveAnimationData(AnimationData inputData)
+        {
+            if (!speedModifyAnimations.Contains(inputData)) return false;
+            
+            _UpdateSingleAnimation(inputData, true);
+            speedModifyAnimations.Remove(inputData);
+            return true;
+        }
+        
+        // Adds an animation to the list, stored in the struct format AnimationData. You need to assign all variables
+        // in this struct except DefaultAnimationSpeed. If you assign DefaultAnimationSpeed it will be ignored.
+        // To make this clear, DefaultAnimationSpeed can only be directly set through a function or reflection.
         public void AddAnimationData(AnimationData inputData)
         {
             if (cachedAnimator == null)
@@ -206,7 +257,7 @@ namespace ModCommon
                                                         inputData.AnimationName);
             }
 
-            inputData.DefaultAnimationSpeed = a.fps;
+            inputData.SetDefaultAnimationSpeed(a.fps);
             
             speedModifyAnimations.Add(inputData);
 
@@ -216,8 +267,20 @@ namespace ModCommon
             }
 
         }
+        
+        // Removes the Wait from the list, if it exists. Returns true if it found and removed it.
+        public bool RemoveWaitData(WaitData inputData)
+        {
+            if (!speedModifyWaits.Contains(inputData)) return false;
+            
+            _UpdateSingleWait(inputData, true);
+            speedModifyWaits.Remove(inputData);
+            return true;
+        }
 
-
+        // Adds a wait to the list, stored in the struct format AnimationData. You need to assign all variables
+        // in this struct except DefaultWaitTime. If you assign DefaultWaitTime it will be ignored.
+        // To make this clear, DefaultWaitTime can only be directly set through a function or reflection.
         public void AddWaitData(WaitData inputData)
         {
             Wait w = _getOrCacheFSMWait(inputData.FSMStateName, inputData.FSMName);
@@ -235,7 +298,7 @@ namespace ModCommon
             }
             else
             {
-                inputData.DefaultWaitTime = tVal;
+                inputData.SetDefaultWaitTime(tVal);
                 speedModifyWaits.Add(inputData);
                 
                 if (active && speedModActive)
@@ -244,7 +307,9 @@ namespace ModCommon
                 }
             }
         }
-
+        
+        // The game doesn't load FsmFloats at the same time as gameobjects so sometimes you have to wait a little bit
+        // to get the float values.
         private IEnumerator _WaitForWaitTimeToBeLoaded(WaitData inputData)
         {
             while (_getOrCacheFSMWait(inputData.FSMStateName, inputData.FSMName).time.Value <= epsilon)
@@ -252,7 +317,7 @@ namespace ModCommon
                 yield return null;
             }
 
-            inputData.DefaultWaitTime = _getOrCacheFSMWait(inputData.FSMStateName, inputData.FSMName).time.Value;
+            inputData.SetDefaultWaitTime(_getOrCacheFSMWait(inputData.FSMStateName, inputData.FSMName).time.Value);
             
             speedModifyWaits.Add(inputData);
                 
@@ -263,7 +328,7 @@ namespace ModCommon
 
         }
 
-        private int _UpdateSingleWait(WaitData inputData)
+        private int _UpdateSingleWait(WaitData inputData, bool restoreOriginal = false)
         {
             int errorCode = 0;
             Wait waitState = _getOrCacheFSMWait(inputData.FSMStateName, inputData.FSMName);
@@ -273,7 +338,7 @@ namespace ModCommon
                                                        + inputData.FSMName + " in state " + inputData.FSMStateName);
             }
             float realFactor = (float) (((danceSpeed - 1.0) * (inputData.WaitTimeInverseFactor - 1.0)) + 1.0);
-            if (!active || !speedModActive)
+            if (!active || !speedModActive || restoreOriginal)
             {
                 realFactor = 1.0f;
             }
@@ -298,7 +363,7 @@ namespace ModCommon
             }
         }
         
-        private void _UpdateSingleAnimation(AnimationData inputData)
+        private void _UpdateSingleAnimation(AnimationData inputData, bool restoreOriginal = false)
         {
             tk2dSpriteAnimationClip clipState = _getOrCacheAnimClip(inputData.AnimationName);
             if (clipState == null)
@@ -309,7 +374,7 @@ namespace ModCommon
             }
             
             float realFactor = (float) (((danceSpeed - 1.0) * (inputData.AnimationSpeedFactor - 1.0)) + 1.0);
-            if (!active || !speedModActive)
+            if (!active || !speedModActive || restoreOriginal)
             {
                 realFactor = 1.0f;
             } else if (realFactor <= epsilon)
@@ -338,6 +403,8 @@ namespace ModCommon
             }
         }
 
+        // This is probably faster than accessing the FSMs and animations directly. Since I'm using a dictionary
+        // which is O(1), and the game is using a list which is O(n).
         private tk2dSpriteAnimationClip _getOrCacheAnimClip(string clipName)
         {
             if (cachedAnimator == null)
