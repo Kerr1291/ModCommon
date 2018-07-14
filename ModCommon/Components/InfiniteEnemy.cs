@@ -115,7 +115,7 @@ namespace ModCommon
             {
                 dance = maxDanceSpeed;
             }
-            updateDanceSpeed(dance);
+            UpdateDanceSpeed(dance);
         }
         
         
