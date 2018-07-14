@@ -11,12 +11,37 @@ namespace ModCommon
 {
     public class CustomEnemySpeed : MonoBehaviour
     {
+        public const int customEnemyAbiVersion = 2;
+        
+        #region Structures
         public struct AnimationData
         {
+            public AnimationData(float animationSpeedFactor, string animationName, GameObject customGameObject = null)
+            {
+                this.CustomGameObject = customGameObject;
+                this.AnimationName = animationName;
+                this.AnimationSpeedFactor = animationSpeedFactor;
+                DefaultAnimationSpeed = 0f;
+                cachedClip = null;
+            }
+
+
+            public AnimationData(float animationSpeedFactor, tk2dSpriteAnimationClip animationClip)
+            {
+                cachedClip = animationClip;
+                AnimationSpeedFactor = animationSpeedFactor;
+                this.CustomGameObject = null;
+                this.AnimationName = animationClip.name;
+                this.DefaultAnimationSpeed = 0f;
+            }
+            
+            
+            public GameObject CustomGameObject;
             public string AnimationName;
             public float AnimationSpeedFactor;
-
             public float DefaultAnimationSpeed { get; private set; }
+            public tk2dSpriteAnimationClip cachedClip;
+            
 
             public void SetDefaultAnimationSpeed(float defaultAnimSpeed)
             {
@@ -26,6 +51,7 @@ namespace ModCommon
 
         public struct WaitData
         {
+            public GameObject CustomGameObject;
             public string FSMName;
             public string FSMStateName;
                         
@@ -38,6 +64,35 @@ namespace ModCommon
             //
             // For faster enemies, set a value less than 1, ofc.
             public float WaitTimeInverseFactor;
+            
+            public int ElementIndex;
+
+            public Wait CachedWait;
+
+            public WaitData(float waitTimeInverseFactor, string fsmName, string fsmStateName, int elementIndex = -1,
+                GameObject customGameObject = null)
+            {
+                CustomGameObject = customGameObject;
+                this.FSMName = fsmName;
+                this.FSMStateName = fsmStateName;
+                this.WaitTimeInverseFactor = waitTimeInverseFactor;
+                DefaultWaitTime = 0f;
+                ElementIndex = elementIndex;
+
+                CachedWait = null;
+            }
+
+            public WaitData(float waitTimeInverseFactor, Wait cachedWait)
+            {
+                this.CachedWait = cachedWait;
+                WaitTimeInverseFactor = waitTimeInverseFactor;
+                CustomGameObject = CachedWait.Owner;
+                FSMName = CachedWait.Fsm.Name;
+                FSMStateName = CachedWait.State.Name;
+                ElementIndex = -1;
+                DefaultWaitTime = 0f;
+
+            }
 
             public float DefaultWaitTime { get; private set; }
 
@@ -47,30 +102,51 @@ namespace ModCommon
             }
         }
 
+        public struct SetVelocity2DData
+        {
+            public GameObject CustomGameObject;
+            public string FSMName;
+            public string FSMStateName;
+            public float MagnitudeFactor;
+            public int ElementIndex;
+            public SetVelocity2d cachedVelo2D;
 
+            public SetVelocity2DData(float magnitudeFactor, string fsmName, string fsmStateName, int elementIndex = -1,
+                GameObject customGameObject = null)
+            {
+                CustomGameObject = customGameObject;
+                FSMName = fsmName;
+                FSMStateName = fsmStateName;
+                MagnitudeFactor = magnitudeFactor;
+                DefaultMagnitude = Vector2.zero;
+                this.cachedVelo2D = null;
 
+                this.ElementIndex = elementIndex;
+            }
 
-        public bool active { get; private set; } = false;
-        public bool speedModActive { get; private set; } = false;
-        public double danceSpeed { get; private set; } = 2.0;
+            public SetVelocity2DData(float magnitudeFactor, SetVelocity2d cachedVelo2D)
+            {
+                MagnitudeFactor = magnitudeFactor;
+                this.cachedVelo2D = cachedVelo2D;
+                CustomGameObject = cachedVelo2D.Owner;
+                FSMName = cachedVelo2D.Fsm.Name;
+                FSMStateName = cachedVelo2D.State.Name;
+                ElementIndex = -1;
+                DefaultMagnitude = Vector2.zero;
+                
+            }
+            
+            public Vector2 DefaultMagnitude { get; private set; }
 
-        public List<AnimationData> speedModifyAnimations { get; private set; } = new List<AnimationData>();
-        public List<WaitData> speedModifyWaits { get; private set; } = new List<WaitData>();
+            public void SetDefaultMagnitude(Vector2 magnitude)
+            {
+                DefaultMagnitude = magnitude;
+            }
+
+        }
+        #endregion
         
-        
-        private readonly Dictionary<string, PlayMakerFSM> cachedFSMs = new Dictionary<string, PlayMakerFSM>();
-        private readonly Dictionary<string, Wait> cachedWaits = new Dictionary<string, Wait>();
-        private readonly Dictionary<string, tk2dSpriteAnimationClip> cachedAnimationClips = new Dictionary<string, tk2dSpriteAnimationClip>();
-
-        public tk2dSpriteAnimator cachedAnimator;
-        public HealthManager cachedHealthManager { get; protected set; }
-
-        protected const float epsilon = 0.0001f;
-
-        private bool waitingForLoad = false;
-
-        public int damageDone { get; protected set; } = 0;
-        protected int maxHP = 0;
+        #region Health And Damage Done
         
         // Update records the damage you have done to the enemy, which may be useful to other classes.
         // For example, consider a custom radiance fight. After 400 damage, you may wish to set the enemy state to
@@ -94,9 +170,11 @@ namespace ModCommon
                 maxHP = cachedHealthManager.hp;
             }
             damageDone = maxHP - cachedHealthManager.hp;
-            
         }
+
         
+
+
         // This directly sets the damage done to a new value.
         // It also reduces the enemy health such that this damage done stat is accurate
         // So long as enemies cannot heal this behavior makes sense.
@@ -164,15 +242,19 @@ namespace ModCommon
             cachedHealthManager = h;
             maxHP = h.hp;
         }
+
+        #endregion
         
+        #region Speed
+
         // Sets the new dance speed. This affects how fast the animations are played. A value of 1.0 plays animations
         // at normal speed. A value of 2.0 uses your modded speeds. A value of 3.0 uses twice the difference between
         // your modded speeds and the normal speeds, plus the normal speeds. A graph and detailed explanation of this
         // behavior is available in Hollow Knight modding documentation.
         
         // The default dance speed is 2.0 which means that it will use all your animation and wait time factors
-        // as they are written without any changes.
-        public void updateDanceSpeed(double newDanceSpeed)
+        // as they are written without any changes.        
+        public void UpdateDanceSpeed(double newDanceSpeed)
         {
             if (newDanceSpeed > 0.0)
             {
@@ -225,8 +307,12 @@ namespace ModCommon
             
             _UpdateAnimations();
             _UpdateWaits();
+            _UpdateSetVelocities();
         }
 
+        #endregion
+        
+        #region Add And Remove
         // Removes the animation from the list, if it exists. Returns true if it found and removed it.
         public bool RemoveAnimationData(AnimationData inputData)
         {
@@ -242,23 +328,25 @@ namespace ModCommon
         // To make this clear, DefaultAnimationSpeed can only be directly set through a function or reflection.
         public void AddAnimationData(AnimationData inputData)
         {
-            if (cachedAnimator == null)
+            if (inputData.cachedClip == null)
             {
-                cachedAnimator = gameObject.GetComponent<tk2dSpriteAnimator>();
+                if (inputData.CustomGameObject == null)
+                {
+                    inputData.CustomGameObject = gameObject;
+                }
+                
+                inputData.cachedClip = _getOrCacheAnimClip(inputData.AnimationName, inputData.CustomGameObject);
             }
-            
-            tk2dSpriteAnimationClip a = _getOrCacheAnimClip(inputData.AnimationName);
-            if (a == null)
+
+            if (inputData.cachedClip == null)
             {
                 throw new System.NullReferenceException("No Animation found on the cachedAnimator on gameobject " +
-                                                        cachedAnimator.gameObject.name + " of name " +
+                                                        inputData.CustomGameObject.name + " of name " +
                                                         inputData.AnimationName);
             }
 
-            inputData.SetDefaultAnimationSpeed(a.fps);
-            
+            inputData.SetDefaultAnimationSpeed(inputData.cachedClip.fps);
             speedModifyAnimations.Add(inputData);
-
             if (active && speedModActive)
             {
                 _UpdateSingleAnimation(inputData);
@@ -281,14 +369,25 @@ namespace ModCommon
         // To make this clear, DefaultWaitTime can only be directly set through a function or reflection.
         public void AddWaitData(WaitData inputData)
         {
-            Wait w = _getOrCacheFSMWait(inputData.FSMStateName, inputData.FSMName);
-            if (w == null)
+            if (inputData.CustomGameObject == null)
+            {
+                inputData.CustomGameObject = gameObject;
+            }
+            
+            if (inputData.CachedWait == null)
+            {
+                inputData.CachedWait = 
+                    _getOrCacheFSMWait(inputData.FSMStateName, inputData.FSMName,
+                        inputData.CustomGameObject, inputData.ElementIndex);
+            }
+            
+            if (inputData.CachedWait == null)
             {
                 throw new System.NullReferenceException("No Wait Action found on the FSM "
                                                         + inputData.FSMName + " in state " + inputData.FSMStateName);
             }
 
-            float tVal = w.time.Value;
+            float tVal = inputData.CachedWait.time.Value;
 
             if (tVal <= epsilon)
             {
@@ -306,19 +405,113 @@ namespace ModCommon
             }
         }
         
+        // Removes the SetVelocity2D from the list, if it exists. Returns true if it found and removed it.
+        public bool RemoveSetVelocity2DData(SetVelocity2DData inputData)
+        {
+            if (!speedModifyVelocity2D.Contains(inputData)) return false;
+            
+            _UpdateSingleSetVelocity2D(inputData, true);
+            speedModifyVelocity2D.Remove(inputData);
+            return true;
+        }
+
+        // Adds a wait to the list, stored in the struct format AnimationData. You need to assign all variables
+        // in this struct except DefaultWaitTime. If you assign DefaultWaitTime it will be ignored.
+        // To make this clear, DefaultWaitTime can only be directly set through a function or reflection.
+        public void AddSetVelocity2DData(SetVelocity2DData inputData)
+        {
+            if (inputData.CustomGameObject == null)
+            {
+                inputData.CustomGameObject = gameObject;
+            }
+            
+            if (inputData.cachedVelo2D == null)
+            {
+                inputData.cachedVelo2D = 
+                    _getOrCacheFSMSetVelocity2D(inputData.FSMStateName, inputData.FSMName,
+                        inputData.CustomGameObject, inputData.ElementIndex);
+            }
+            
+            if (inputData.cachedVelo2D == null)
+            {
+                throw new System.NullReferenceException("No Wait Action found on the FSM "
+                                                        + inputData.FSMName + " in state " + inputData.FSMStateName);
+            }
+            
+            Vector2 origVec = new Vector2(inputData.cachedVelo2D.x.Value, inputData.cachedVelo2D.y.Value);
+            float mag = origVec.magnitude;
+            if (mag <= epsilon)
+            {
+                StartCoroutine(_WaitForSetVelo2DToBeLoaded(inputData));
+            }
+            else
+            {
+                
+                inputData.SetDefaultMagnitude(origVec);
+                speedModifyVelocity2D.Add(inputData);
+                
+                if (active && speedModActive)
+                {
+                    _UpdateSingleSetVelocity2D(inputData);
+                }
+            }
+        }
+        #endregion
+
+        #region Private Animation Methods
+
+        private void _UpdateSingleAnimation(AnimationData inputData, bool restoreOriginal = false)
+        {
+            if (inputData.cachedClip == null && inputData.CustomGameObject != null)
+            {
+                throw new NullReferenceException("Unable to load a clip named " + inputData.AnimationName + " on "
+                                                 + "the game object " + inputData.CustomGameObject.name + ". " +
+                                                 "This clip probably does not exist.");
+            }
+
+            if (inputData.cachedClip == null)
+            {
+                throw new NullReferenceException("Unable to load a clip named " + inputData.AnimationName + " on an" +
+                                                 " unknown gameobject. " +
+                                                 "This clip probably does not exist.");
+            }
+            float realFactor = (float) (((danceSpeed - 1.0) * (inputData.AnimationSpeedFactor - 1.0)) + 1.0);
+            if (!active || !speedModActive || restoreOriginal)
+            {
+                realFactor = 1.0f;
+            } else if (realFactor <= epsilon)
+            {
+                throw new Exception("To prevent Playmaker undefined behavior," +
+                                    " your speed factor must be greater than " +
+                                    epsilon + ". But a dance speed of " + danceSpeed +
+                                    " set it to " + realFactor);
+            }
+            inputData.cachedClip.fps = (inputData.DefaultAnimationSpeed * realFactor);
+        }
+        
+        private void _UpdateAnimations()
+        {
+            foreach (AnimationData anim in speedModifyAnimations)
+            {
+                _UpdateSingleAnimation(anim);
+            }
+        }
+
+        #endregion
+        
+        #region Private Wait Methods
+
+
         // The game doesn't load FsmFloats at the same time as gameobjects so sometimes you have to wait a little bit
         // to get the float values.
         private IEnumerator _WaitForWaitTimeToBeLoaded(WaitData inputData)
         {
-            while (_getOrCacheFSMWait(inputData.FSMStateName, inputData.FSMName).time.Value <= epsilon)
+            while (inputData.CachedWait.time.Value <= epsilon)
             {
                 yield return null;
             }
-
-            inputData.SetDefaultWaitTime(_getOrCacheFSMWait(inputData.FSMStateName, inputData.FSMName).time.Value);
-            
+            inputData.SetDefaultWaitTime(inputData.CachedWait.time.Value);
             speedModifyWaits.Add(inputData);
-                
             if (active && speedModActive)
             {
                 _UpdateSingleWait(inputData);
@@ -326,14 +519,12 @@ namespace ModCommon
 
         }
 
-        private int _UpdateSingleWait(WaitData inputData, bool restoreOriginal = false)
+        private void _UpdateSingleWait(WaitData inputData, bool restoreOriginal = false)
         {
-            int errorCode = 0;
-            Wait waitState = _getOrCacheFSMWait(inputData.FSMStateName, inputData.FSMName);
-            if (waitState == null)
+            if (inputData.CachedWait == null)
             {
-                throw new System.NullReferenceException("No Wait Action found on the FSM "
-                                                       + inputData.FSMName + " in state " + inputData.FSMStateName);
+                throw new NullReferenceException("No Wait Action found on the FSM "
+                                                        + inputData.FSMName + " in state " + inputData.FSMStateName);
             }
             float realFactor = (float) (((danceSpeed - 1.0) * (inputData.WaitTimeInverseFactor - 1.0)) + 1.0);
             if (!active || !speedModActive || restoreOriginal)
@@ -349,8 +540,7 @@ namespace ModCommon
                                     " set it to " + realFactor);
             }
 
-            waitState.time = (inputData.DefaultWaitTime / realFactor);
-            return errorCode;
+            inputData.CachedWait.time = (inputData.DefaultWaitTime / realFactor);
         }
 
         private void _UpdateWaits()
@@ -360,97 +550,148 @@ namespace ModCommon
                 _UpdateSingleWait(w);
             }
         }
+        #endregion
         
-        private void _UpdateSingleAnimation(AnimationData inputData, bool restoreOriginal = false)
+        #region Private SetVelocity2D Methods
+        private IEnumerator _WaitForSetVelo2DToBeLoaded(SetVelocity2DData inputData)
         {
-            tk2dSpriteAnimationClip clipState = _getOrCacheAnimClip(inputData.AnimationName);
-            if (clipState == null)
+            // after this much time it will assume the set velocity 2d actually in fact has a magnitude of 0
+            // at which point it WILL NOT add it to the list. because: simply put, you can't speed up or slow down
+            // a zero vector by any amount.
+            float maxWaitTime = 5f;
+            Vector2 velocityVec = new Vector2(inputData.cachedVelo2D.x.Value, inputData.cachedVelo2D.y.Value);
+            while (velocityVec.magnitude <= epsilon && maxWaitTime > 0.0f)
             {
-                throw new NullReferenceException("Unable to load a clip named " + inputData.AnimationName + " on "
-                                                 + "the game object " + cachedAnimator.gameObject.name + ". " +
-                                                 "This clip probably does not exist.");
+                maxWaitTime -= Time.deltaTime;
+                yield return null;
+                velocityVec = new Vector2(inputData.cachedVelo2D.x.Value, inputData.cachedVelo2D.y.Value);
+            }
+
+            if (maxWaitTime <= 0.0f)
+            {
+                Modding.Logger.LogError("[ModCommon] Unable to add setvelocity2d to CustomEnemySpeed because the velocity is a " +
+                                        "zero vector which cannot have its speed modified.");
+                yield break;
             }
             
-            float realFactor = (float) (((danceSpeed - 1.0) * (inputData.AnimationSpeedFactor - 1.0)) + 1.0);
+            Vector2 origVec = new Vector2(inputData.cachedVelo2D.x.Value, inputData.cachedVelo2D.y.Value);
+            inputData.SetDefaultMagnitude(origVec);
+            speedModifyVelocity2D.Add(inputData);
+            if (active && speedModActive)
+            {
+                _UpdateSingleSetVelocity2D(inputData);
+            }
+        }
+
+        private void _UpdateSingleSetVelocity2D(SetVelocity2DData inputData, bool restoreOriginal = false)
+        {
+            if (inputData.cachedVelo2D == null)
+            {
+                throw new NullReferenceException("No SetVelocity2D Action found on the FSM "
+                                                 + inputData.FSMName + " in state " + inputData.FSMStateName);
+            }
+            float realFactor = (float) (((danceSpeed - 1.0) * (inputData.MagnitudeFactor - 1.0)) + 1.0);
             if (!active || !speedModActive || restoreOriginal)
             {
                 realFactor = 1.0f;
-            } else if (realFactor <= epsilon)
-            {
-                throw new Exception("To prevent Playmaker undefined behavior," +
-                                               " your speed factor must be greater than " +
-                                               epsilon + ". But a dance speed of " + danceSpeed +
-                                               " set it to " + realFactor);
             }
+            // Stop divide by zero.
+            else if (realFactor <= epsilon)
+            {
+                throw new Exception("To prevent stupid looking, and broken behavior," +
+                                    " your relative magnitude must be greater than " +
+                                    epsilon + ". But a dance speed of " + danceSpeed +
+                                    " set it to " + realFactor);
+            }
+            
+            inputData.cachedVelo2D.x.Value = (inputData.DefaultMagnitude.x * realFactor);
+            inputData.cachedVelo2D.y.Value = (inputData.DefaultMagnitude.y * realFactor);
+        }
 
-            clipState.fps = (inputData.DefaultAnimationSpeed * realFactor);
+        private void _UpdateSetVelocities()
+        {
+            foreach (SetVelocity2DData s in speedModifyVelocity2D)
+            {
+                _UpdateSingleSetVelocity2D(s);
+            }
         }
         
-        private void _UpdateAnimations()
+
+        #endregion
+        
+        #region Get Or Cache
+
+        private static tk2dSpriteAnimationClip _getOrCacheAnimClip(string clipName, GameObject go)
         {
-            if (cachedAnimator == null)
-            {
-                throw new NullReferenceException("Unable to load this gameobject's tk2dSpriteAnimator. Please set it " +
-                                                 "manually if it exists or avoid using CustomEnemy to manage " +
-                                                 "animation speeds.");
-            }
-            
-            foreach (AnimationData anim in speedModifyAnimations)
-            {
-                _UpdateSingleAnimation(anim);
-            }
+            return go == null ? null : go.GetComponent<tk2dSpriteAnimator>().GetClipByName(clipName);
         }
 
-        // This is probably faster than accessing the FSMs and animations directly. Since I'm using a dictionary
-        // which is O(1), and the game is using a list which is O(n).
-        private tk2dSpriteAnimationClip _getOrCacheAnimClip(string clipName)
+        private static PlayMakerFSM _getOrCacheFSM(string fsmName, GameObject go)
         {
-            if (cachedAnimator == null)
-            {
-                throw new NullReferenceException("Unable to load this gameobject's tk2dSpriteAnimator. Please set it " +
-                                                 "manually if it exists or avoid using CustomEnemy to manage " +
-                                                 "animation speeds.");
-            }
-
-            if (cachedAnimationClips.TryGetValue(clipName, out tk2dSpriteAnimationClip outVal)) return outVal;
-
-            outVal = cachedAnimator.GetClipByName(clipName);
-
-            if (outVal != null)
-                cachedAnimationClips[clipName] = outVal;
-
-            return outVal;
-        }
-
-        private PlayMakerFSM _getOrCacheFSM(string fsmName)
-        {
-            if (cachedFSMs.TryGetValue(fsmName, out PlayMakerFSM outVal)) return outVal;
-            
-            outVal = FSMUtility.LocateFSM(gameObject, fsmName);
-            if (outVal != null)
-                cachedFSMs[fsmName] = outVal;
-            
-            return outVal;
+            return go == null ? null : FSMUtility.LocateFSM(go, fsmName);
         }
                 
-        private Wait _getOrCacheFSMWait(string stateName, string fsmName)
+        private static Wait _getOrCacheFSMWait(string stateName, string fsmName, GameObject go, int index)
         {
-            if (cachedWaits.TryGetValue(stateName, out Wait outVal)) return outVal;
-            PlayMakerFSM myFsm = _getOrCacheFSM(fsmName);
-            FsmState myState;
-            if (myFsm != null)
-                myState = myFsm.GetState(stateName);
-            else
-                return null;
-            if (myState != null)
-                outVal = (Wait) myState.Actions.FirstOrDefault(wait => wait is Wait);
-            if (outVal != null)
-                cachedWaits[stateName] = outVal;
+            Wait outVal = null;
+             
+            PlayMakerFSM myFsm = _getOrCacheFSM(fsmName, go);
+
+            if (index < 0)
+            {
+                FsmState myState;
+                if (myFsm != null)
+                    myState = myFsm.GetState(stateName);
+                else
+                    return null;
+                if (myState != null)
+                    outVal = (Wait) myState.Actions.FirstOrDefault(wait => wait is Wait);
             
-            return outVal;
+                return outVal;
+            }
+            else
+            {
+                return FsmUtil.GetAction<Wait>(myFsm, stateName, index);
+            }
         }
         
         
+        private static SetVelocity2d _getOrCacheFSMSetVelocity2D(string stateName, string fsmName, GameObject go, int index)
+        {
+            SetVelocity2d outVal = null;
+             
+            PlayMakerFSM myFsm = _getOrCacheFSM(fsmName, go);
+
+            if (index < 0)
+            {
+                FsmState myState;
+                if (myFsm != null)
+                    myState = myFsm.GetState(stateName);
+                else
+                    return null;
+                if (myState != null)
+                    outVal = (SetVelocity2d) myState.Actions.FirstOrDefault(setVelo => setVelo is SetVelocity2d);
+            
+                return outVal;
+            }
+            else
+            {
+                return FsmUtil.GetAction<SetVelocity2d>(myFsm, stateName, index);
+            }
+        }
+
+        #endregion
         
+        public bool active { get; private set; } = false;
+        public bool speedModActive { get; private set; } = false;
+        public double danceSpeed { get; private set; } = 2.0;
+        public List<AnimationData> speedModifyAnimations { get; private set; } = new List<AnimationData>();
+        public List<WaitData> speedModifyWaits { get; private set; } = new List<WaitData>();
+        public List<SetVelocity2DData> speedModifyVelocity2D { get; private set; } = new List<SetVelocity2DData>();
+        public HealthManager cachedHealthManager { get; protected set; }
+        protected const float epsilon = 0.0001f;
+        private bool waitingForLoad = false;
+        public int damageDone { get; protected set; } = 0;
+        protected int maxHP = 0;
     }
 }

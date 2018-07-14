@@ -77,6 +77,8 @@ namespace ModCommon.Util
 
         public static FsmStateAction GetAction(PlayMakerFSM fsm, string stateName, int index)
         {
+            if (fsm == null)
+                return null;
             foreach (FsmState t in fsm.FsmStates)
             {
                 if (t.Name != stateName) continue;
