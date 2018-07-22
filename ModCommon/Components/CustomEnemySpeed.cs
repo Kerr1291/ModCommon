@@ -11,7 +11,7 @@ namespace ModCommon
 {
     public class CustomEnemySpeed : MonoBehaviour
     {
-        public const int customEnemyAbiVersion = 2;
+        public static readonly int customEnemyAbiVersion = 3;
         
         #region Structures
         public struct AnimationData
@@ -144,6 +144,91 @@ namespace ModCommon
             }
 
         }
+        
+        public struct SetFloatValueData
+        {
+            public GameObject CustomGameObject;
+            public string FSMName;
+            public string FSMStateName;
+            public float Factor;
+            public int ElementIndex;
+            public SetFloatValue cachedFloatValue;
+
+            public SetFloatValueData(float magnitudeFactor, string fsmName, string fsmStateName, int elementIndex = -1,
+                GameObject customGameObject = null)
+            {
+                CustomGameObject = customGameObject;
+                FSMName = fsmName;
+                FSMStateName = fsmStateName;
+                Factor = magnitudeFactor;
+                defaultValue = 0;
+                this.cachedFloatValue = null;
+
+                this.ElementIndex = elementIndex;
+            }
+
+            public SetFloatValueData(float magnitudeFactor, SetFloatValue cachedFloatValue)
+            {
+                Factor = magnitudeFactor;
+                this.cachedFloatValue = cachedFloatValue;
+                CustomGameObject = cachedFloatValue.Owner;
+                FSMName = cachedFloatValue.Fsm.Name;
+                FSMStateName = cachedFloatValue.State.Name;
+                ElementIndex = -1;
+                defaultValue = 0;
+                
+            }
+            public float defaultValue { get; private set; }
+            public void SetDefaultFloat(float value)
+            {
+                defaultValue = value;
+            }
+
+        }
+
+        public struct WaitRandomData
+        {
+            public GameObject CustomGameObject;
+            public string FSMName;
+            public string FSMStateName;
+            public float WaitTimeInverseFactor;
+            public int ElementIndex;
+            public WaitRandom cachedWaitRandom;
+
+            public WaitRandomData(float waitTimeInverseFactor, string fsmName, string fsmStateName, int elementIndex = -1,
+                GameObject customGameObject = null)
+            {
+                CustomGameObject = customGameObject;
+                FSMName = fsmName;
+                FSMStateName = fsmStateName;
+                WaitTimeInverseFactor = waitTimeInverseFactor;
+                this.cachedWaitRandom = null;
+                this.ElementIndex = elementIndex;
+                defaultMaximum = 0;
+                defaultMinimum = 0;
+            }
+
+            public WaitRandomData(float waitTimeInverseFactor, WaitRandom cachedWaitRandom)
+            {
+                WaitTimeInverseFactor = waitTimeInverseFactor;
+                this.cachedWaitRandom = cachedWaitRandom;
+                CustomGameObject = cachedWaitRandom.Owner;
+                FSMName = cachedWaitRandom.Fsm.Name;
+                FSMStateName = cachedWaitRandom.State.Name;
+                ElementIndex = -1;
+                defaultMaximum = 0;
+                defaultMinimum = 0;
+            }
+            public float defaultMinimum { get; private set; }
+            public float defaultMaximum { get; private set; }
+            public void SetDefaultFloats(float min, float max)
+            {
+                defaultMinimum = min;
+                defaultMaximum = max;
+            }
+        }
+        
+        
         #endregion
         
         #region Health And Damage Done
@@ -308,6 +393,8 @@ namespace ModCommon
             _UpdateAnimations();
             _UpdateWaits();
             _UpdateSetVelocities();
+            _UpdateSetFloatValues();
+            _UpdateWaitRandoms();
         }
 
         #endregion
@@ -364,9 +451,7 @@ namespace ModCommon
             return true;
         }
 
-        // Adds a wait to the list, stored in the struct format AnimationData. You need to assign all variables
-        // in this struct except DefaultWaitTime. If you assign DefaultWaitTime it will be ignored.
-        // To make this clear, DefaultWaitTime can only be directly set through a function or reflection.
+        // Adds a Wait to the list, stored in the struct format WaitData. Use a constructor to build it.
         public void AddWaitData(WaitData inputData)
         {
             if (inputData.CustomGameObject == null)
@@ -415,9 +500,7 @@ namespace ModCommon
             return true;
         }
 
-        // Adds a wait to the list, stored in the struct format AnimationData. You need to assign all variables
-        // in this struct except DefaultWaitTime. If you assign DefaultWaitTime it will be ignored.
-        // To make this clear, DefaultWaitTime can only be directly set through a function or reflection.
+        // Adds a SetVelocity2D to the list, stored in the struct format SetVelocity2DData. Use a constructor to build it.
         public void AddSetVelocity2DData(SetVelocity2DData inputData)
         {
             if (inputData.CustomGameObject == null)
@@ -434,7 +517,7 @@ namespace ModCommon
             
             if (inputData.cachedVelo2D == null)
             {
-                throw new System.NullReferenceException("No Wait Action found on the FSM "
+                throw new System.NullReferenceException("No SetVelocity2D Action found on the FSM "
                                                         + inputData.FSMName + " in state " + inputData.FSMStateName);
             }
             
@@ -456,9 +539,110 @@ namespace ModCommon
                 }
             }
         }
+        
+        // Removes the SetFloatValue Data from the list, if it exists. Returns true if it found and removed it.
+        public bool RemoveSetFloatValueData(SetFloatValueData inputData)
+        {
+            if (!speedModifyFloatValues.Contains(inputData)) return false;
+            
+            _UpdateSingleSetFloatValue(inputData, true);
+            speedModifyFloatValues.Remove(inputData);
+            return true;
+        }
+
+        // Adds a SetFloatValue to the list, stored in the struct format SetFloatValueData. Use a constructor to build it.
+        public void AddSetFloatValueData(SetFloatValueData inputData)
+        {
+            if (inputData.CustomGameObject == null)
+            {
+                inputData.CustomGameObject = gameObject;
+            }
+            
+            if (inputData.cachedFloatValue == null)
+            {
+                inputData.cachedFloatValue = 
+                    _getOrCacheFSMSetFloatValue(inputData.FSMStateName, inputData.FSMName,
+                        inputData.CustomGameObject, inputData.ElementIndex);
+            }
+            
+            if (inputData.cachedFloatValue == null)
+            {
+                throw new System.NullReferenceException("No SetFloatValue Action found on the FSM "
+                                                        + inputData.FSMName + " in state " + inputData.FSMStateName);
+            }
+            
+            float mag = (float) Math.Abs(inputData.cachedFloatValue.floatValue.Value);
+            if (mag <= epsilon)
+            {
+                StartCoroutine(_WaitForSetFloatValueToBeLoaded(inputData));
+            }
+            else
+            {
+                
+                inputData.SetDefaultFloat(inputData.cachedFloatValue.floatValue.Value);
+                speedModifyFloatValues.Add(inputData);
+                
+                if (active && speedModActive)
+                {
+                    _UpdateSingleSetFloatValue(inputData);
+                }
+            }
+        }
+        
+        
+        // Removes the WaitRandom from the list, if it exists. Returns true if it found and removed it.
+        public bool RemoveWaitRandomData(WaitRandomData inputData)
+        {
+            if (!speedModifyWaitRandoms.Contains(inputData)) return false;
+            
+            _UpdateSingleWaitRandom(inputData, true);
+            speedModifyWaitRandoms.Remove(inputData);
+            return true;
+        }
+
+        // Adds a WaitRandom to the list, stored in the struct format WaitRandomData. Use a constructor to build it.
+        public void AddWaitRandomData(WaitRandomData inputData)
+        {
+            if (inputData.CustomGameObject == null)
+            {
+                inputData.CustomGameObject = gameObject;
+            }
+
+            
+            if (inputData.cachedWaitRandom == null)
+            {
+                inputData.cachedWaitRandom = 
+                    _getOrCacheFSMWaitRandom(inputData.FSMStateName, inputData.FSMName,
+                        inputData.CustomGameObject, inputData.ElementIndex);
+            }
+            
+            if (inputData.cachedWaitRandom == null)
+            {
+                throw new System.NullReferenceException("No WaitRandom Action found on the FSM "
+                                                        + inputData.FSMName + " in state " + inputData.FSMStateName);
+            }
+            
+            float tMax = inputData.cachedWaitRandom.timeMax.Value;
+
+            if (tMax <= epsilon)
+            {
+                StartCoroutine(_WaitForWaitRandomTimeToBeLoaded(inputData));
+            }
+            else
+            {
+                inputData.SetDefaultFloats(inputData.cachedWaitRandom.timeMin.Value, tMax);
+                speedModifyWaitRandoms.Add(inputData);
+                
+                if (active && speedModActive)
+                {
+                    _UpdateSingleWaitRandom(inputData);
+                }
+            }
+        }
+        
         #endregion
 
-        #region Private Animation Methods
+        #region Private Speed Apply Methods
 
         private void _UpdateSingleAnimation(AnimationData inputData, bool restoreOriginal = false)
         {
@@ -496,11 +680,6 @@ namespace ModCommon
                 _UpdateSingleAnimation(anim);
             }
         }
-
-        #endregion
-        
-        #region Private Wait Methods
-
 
         // The game doesn't load FsmFloats at the same time as gameobjects so sometimes you have to wait a little bit
         // to get the float values.
@@ -550,9 +729,6 @@ namespace ModCommon
                 _UpdateSingleWait(w);
             }
         }
-        #endregion
-        
-        #region Private SetVelocity2D Methods
         private IEnumerator _WaitForSetVelo2DToBeLoaded(SetVelocity2DData inputData)
         {
             // after this much time it will assume the set velocity 2d actually in fact has a magnitude of 0
@@ -615,9 +791,121 @@ namespace ModCommon
                 _UpdateSingleSetVelocity2D(s);
             }
         }
-        
+                
+        private IEnumerator _WaitForSetFloatValueToBeLoaded(SetFloatValueData inputData)
+        {
+            // after this much time it will assume the set velocity 2d actually in fact has a magnitude of 0
+            // at which point it WILL NOT add it to the list. because: simply put, you can't speed up or slow down
+            // a zero vector by any amount.
+            float maxWaitTime = 5f;
+            float defFloat = inputData.cachedFloatValue.floatValue.Value;
+            while (Math.Abs(defFloat) < epsilon && maxWaitTime > 0.0f)
+            {
+                maxWaitTime -= Time.deltaTime;
+                yield return null;
+                defFloat = inputData.cachedFloatValue.floatValue.Value;
+            }
 
+            if (maxWaitTime <= 0.0f)
+            {
+                Modding.Logger.LogError("[ModCommon] Unable to add setfloatvalue to CustomEnemySpeed because the float is " +
+                                        "basically 0 which cannot have its value modified.");
+                yield break;
+            }
+            
+            
+            inputData.SetDefaultFloat(defFloat);
+            speedModifyFloatValues.Add(inputData);
+            if (active && speedModActive)
+            {
+                _UpdateSingleSetFloatValue(inputData);
+            }
+        }
+
+        private void _UpdateSingleSetFloatValue(SetFloatValueData inputData, bool restoreOriginal = false)
+        {
+            if (inputData.cachedFloatValue == null)
+            {
+                throw new NullReferenceException("No SetFloatValue Action found on the FSM "
+                                                 + inputData.FSMName + " in state " + inputData.FSMStateName);
+            }
+            float realFactor = (float) (((danceSpeed - 1.0) * (inputData.Factor - 1.0)) + 1.0);
+            if (!active || !speedModActive || restoreOriginal)
+            {
+                realFactor = 1.0f;
+            }
+            // Stop divide by zero.
+            else if (realFactor <= epsilon)
+            {
+                throw new Exception("To prevent stupid looking, and broken behavior," +
+                                    " your relative magnitude must be greater than " +
+                                    epsilon + ". But a dance speed of " + danceSpeed +
+                                    " set it to " + realFactor);
+            }
+            inputData.cachedFloatValue.floatValue.Value = (inputData.defaultValue * realFactor);
+        }
+
+        private void _UpdateSetFloatValues()
+        {
+            foreach (SetFloatValueData s in speedModifyFloatValues)
+            {
+                _UpdateSingleSetFloatValue(s);
+            }
+        }
+        
+        
+        // The game doesn't load FsmFloats at the same time as gameobjects so sometimes you have to wait a little bit
+        // to get the float values.
+        private IEnumerator _WaitForWaitRandomTimeToBeLoaded(WaitRandomData inputData)
+        {
+            while (inputData.cachedWaitRandom.timeMax.Value <= epsilon)
+            {
+                yield return null;
+            }
+            inputData.SetDefaultFloats(inputData.cachedWaitRandom.timeMin.Value, inputData.cachedWaitRandom.timeMax.Value);
+            speedModifyWaitRandoms.Add(inputData);
+            if (active && speedModActive)
+            {
+                _UpdateSingleWaitRandom(inputData);
+            }
+
+        }
+
+        private void _UpdateSingleWaitRandom(WaitRandomData inputData, bool restoreOriginal = false)
+        {
+            if (inputData.cachedWaitRandom == null)
+            {
+                throw new NullReferenceException("No WaitRandom Action found on the FSM "
+                                                 + inputData.FSMName + " in state " + inputData.FSMStateName);
+            }
+            float realFactor = (float) (((danceSpeed - 1.0) * (inputData.WaitTimeInverseFactor - 1.0)) + 1.0);
+            if (!active || !speedModActive || restoreOriginal)
+            {
+                realFactor = 1.0f;
+            }
+            // Stop divide by zero.
+            else if (realFactor <= epsilon)
+            {
+                throw new Exception("To prevent Playmaker undefined behavior," +
+                                    " your speed factor must be greater than " +
+                                    epsilon + ". But a dance speed of " + danceSpeed +
+                                    " set it to " + realFactor);
+            }
+
+            inputData.cachedWaitRandom.timeMax = (inputData.defaultMaximum / realFactor);
+            inputData.cachedWaitRandom.timeMin = (inputData.defaultMinimum / realFactor);
+        }
+
+        private void _UpdateWaitRandoms()
+        {
+            foreach (WaitRandomData w in speedModifyWaitRandoms)
+            {
+                _UpdateSingleWaitRandom(w);
+            }
+        }
+        
         #endregion
+        
         
         #region Get Or Cache
 
@@ -679,6 +967,54 @@ namespace ModCommon
                 return FsmUtil.GetAction<SetVelocity2d>(myFsm, stateName, index);
             }
         }
+        
+        
+        private static SetFloatValue _getOrCacheFSMSetFloatValue(string stateName, string fsmName, GameObject go, int index)
+        {
+            SetFloatValue outVal = null;
+             
+            PlayMakerFSM myFsm = _getOrCacheFSM(fsmName, go);
+
+            if (index < 0)
+            {
+                FsmState myState;
+                if (myFsm != null)
+                    myState = myFsm.GetState(stateName);
+                else
+                    return null;
+                if (myState != null)
+                    outVal = (SetFloatValue) myState.Actions.FirstOrDefault(setFloat => setFloat is SetFloatValue);
+            
+                return outVal;
+            }
+            else
+            {
+                return FsmUtil.GetAction<SetFloatValue>(myFsm, stateName, index);
+            }
+        }
+        
+        
+        private static WaitRandom _getOrCacheFSMWaitRandom(string stateName, string fsmName, GameObject go, int index)
+        {
+            WaitRandom outVal = null;
+            PlayMakerFSM myFsm = _getOrCacheFSM(fsmName, go);
+            if (index < 0)
+            {
+                FsmState myState;
+                if (myFsm != null)
+                    myState = myFsm.GetState(stateName);
+                else
+                    return null;
+                if (myState != null)
+                    outVal = (WaitRandom) myState.Actions.FirstOrDefault(wRand => wRand is WaitRandom);
+            
+                return outVal;
+            }
+            else
+            {
+                return FsmUtil.GetAction<WaitRandom>(myFsm, stateName, index);
+            }
+        }
 
         #endregion
         
@@ -688,6 +1024,8 @@ namespace ModCommon
         public List<AnimationData> speedModifyAnimations { get; private set; } = new List<AnimationData>();
         public List<WaitData> speedModifyWaits { get; private set; } = new List<WaitData>();
         public List<SetVelocity2DData> speedModifyVelocity2D { get; private set; } = new List<SetVelocity2DData>();
+        public List<SetFloatValueData> speedModifyFloatValues { get; private set; } = new List<SetFloatValueData>();
+        public List<WaitRandomData> speedModifyWaitRandoms { get; private set; } = new List<WaitRandomData>();
         public HealthManager cachedHealthManager { get; protected set; }
         protected const float epsilon = 0.0001f;
         private bool waitingForLoad = false;
