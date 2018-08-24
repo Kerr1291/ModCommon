@@ -36,14 +36,17 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="Assembly-CSharp">
-      <HintPath>..\..\..\..\..\Steam\steamapps\common\Hollow Knight\hollow_knight_Data\Managed\Assembly-CSharp.dll</HintPath>
+    <Reference Include="Assembly-CSharp, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null">
+      <HintPath>..\..\gdm\Assembly-CSharp.dll</HintPath>
     </Reference>
     <Reference Include="MonoMod.Utils, Version=18.6.0.33033, Culture=neutral, PublicKeyToken=null">
       <HintPath>..\MonoMod\MonoMod.Utils.dll</HintPath>
     </Reference>
-    <Reference Include="PlayMaker">
-      <HintPath>..\..\..\..\..\Steam\steamapps\common\Hollow Knight\hollow_knight_Data\Managed\PlayMaker.dll</HintPath>
+    <Reference Include="mscorlib, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089">
+      <HintPath>..\..\gdm\mscorlib.dll</HintPath>
+    </Reference>
+    <Reference Include="PlayMaker, Version=1.6.0.0, Culture=neutral, PublicKeyToken=null">
+      <HintPath>..\..\gdm\PlayMaker.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
@@ -52,11 +55,38 @@
     <Reference Include="System.Data.DataSetExtensions" />
     <Reference Include="System.Data" />
     <Reference Include="System.Xml" />
-    <Reference Include="UnityEngine">
-      <HintPath>..\..\..\..\..\Steam\steamapps\common\Hollow Knight\hollow_knight_Data\Managed\UnityEngine.dll</HintPath>
+    <Reference Include="UnityEngine, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null">
+      <HintPath>..\..\gdm\UnityEngine.dll</HintPath>
     </Reference>
-    <Reference Include="UnityEngine.UI">
-      <HintPath>..\..\..\..\..\Steam\steamapps\common\Hollow Knight\hollow_knight_Data\Managed\UnityEngine.UI.dll</HintPath>
+    <Reference Include="UnityEngine.AnimationModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null">
+      <HintPath>bin\Release\UnityEngine.AnimationModule.dll</HintPath>
+    </Reference>
+    <Reference Include="UnityEngine.AudioModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null">
+      <HintPath>bin\Release\UnityEngine.AudioModule.dll</HintPath>
+    </Reference>
+    <Reference Include="UnityEngine.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null">
+      <HintPath>bin\Release\UnityEngine.CoreModule.dll</HintPath>
+    </Reference>
+    <Reference Include="UnityEngine.JSONSerializeModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null">
+      <HintPath>bin\Release\UnityEngine.JSONSerializeModule.dll</HintPath>
+    </Reference>
+    <Reference Include="UnityEngine.ParticleSystemModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null">
+      <HintPath>bin\Release\UnityEngine.ParticleSystemModule.dll</HintPath>
+    </Reference>
+    <Reference Include="UnityEngine.Physics2DModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null">
+      <HintPath>bin\Release\UnityEngine.Physics2DModule.dll</HintPath>
+    </Reference>
+    <Reference Include="UnityEngine.TextRenderingModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null">
+      <HintPath>bin\Release\UnityEngine.TextRenderingModule.dll</HintPath>
+    </Reference>
+    <Reference Include="UnityEngine.UI, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null">
+      <HintPath>bin\Release\UnityEngine.UI.dll</HintPath>
+    </Reference>
+    <Reference Include="UnityEngine.UIElementsModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null">
+      <HintPath>..\..\gdm\UnityEngine.UIElementsModule.dll</HintPath>
+    </Reference>
+    <Reference Include="UnityEngine.UIModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null">
+      <HintPath>bin\Release\UnityEngine.UIModule.dll</HintPath>
     </Reference>
   </ItemGroup>
   <ItemGroup>
@@ -129,23 +159,8 @@
     <Error Condition="!Exists('..\packages\ILRepack.2.0.15\build\ILRepack.props')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\ILRepack.2.0.15\build\ILRepack.props'))" />
   </Target>
   <PropertyGroup>
-    <PostBuildEvent Condition="'$(OS)' == 'Windows_NT'">copy /Y "$(SolutionDir)MonoMod\*" "$(ProjectDir)$(OutputPath)\"
-      cd "$(ProjectDir)$(OutputPath)"
-      $(SolutionDir)MonoMod\MonoMod.RuntimeDetour.HookGen.exe --private Assembly-CSharp.dll
-      $(SolutionDir)MonoMod\MonoMod.RuntimeDetour.HookGen.exe --private Playmaker.dll
-
-      rem "Rename so that the output has the right assembly name"
-      move "ModCommon.dll" "ModCommonNoHooks.dll"
-      $(SolutionDir)packages\ILRepack.2.0.15\tools\ILRepack.exe /out:ModCommon.dll ModCommonNoHooks.dll MMHOOK_Assembly-CSharp.dll MMHOOK_Playmaker.dll MonoMod.Utils.dll Mono.Cecil.dll MonoMod.RuntimeDetour.dll</PostBuildEvent>
-    <PostBuildEvent Condition="'$(OS)' != 'Windows_NT'">
-      cp -r "$(SolutionDir)MonoMod/"* "$(ProjectDir)$(OutputPath)"
-      cd "$(ProjectDir)$(OutputPath)"
-      mono $(SolutionDir)MonoMod/MonoMod.RuntimeDetour.HookGen.exe --private Assembly-CSharp.dll
-      mono $(SolutionDir)MonoMod/MonoMod.RuntimeDetour.HookGen.exe --private PlayMaker.dll
-
-      mv "ModCommon.dll" "ModCommonNoHooks.dll"
-      mono $(SolutionDir)packages/ILRepack.2.0.15/tools/ILRepack.exe /out:ModCommon.dll ModCommonNoHooks.dll MMHOOK_Assembly-CSharp.dll MMHOOK_PlayMaker.dll MonoMod.Utils.dll Mono.Cecil.dll MonoMod.RuntimeDetour.dll
-  </PostBuildEvent>
+    <PostBuildEvent Condition="'$(OS)' == 'Windows_NT'"></PostBuildEvent>
+    <PostBuildEvent Condition="'$(OS)' != 'Windows_NT'"></PostBuildEvent>
   </PropertyGroup>
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
