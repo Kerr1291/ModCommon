@@ -43,19 +43,22 @@ namespace ModCommon
 
         public static Vector2 Set( this Vector2 v, int componentIndex, float value )
         {
-            v[ componentIndex ] = value;
+            if (componentIndex == 0)
+                v.x = value;
+            if (componentIndex == 1)
+                v.y = value;
             return v;
         }
 
         public static Vector2 SetX( this Vector2 v, float value )
         {
-            v[ 0 ] = value;
+            v.x = value;
             return v;
         }
 
         public static Vector2 SetY( this Vector2 v, float value )
         {
-            v[ 1 ] = value;
+            v.y = value;
             return v;
         }
 
