@@ -55,6 +55,9 @@
     <Reference Include="System.Data.DataSetExtensions" />
     <Reference Include="System.Data" />
     <Reference Include="System.Xml" />
+    <Reference Include="UnityEngine, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null">
+      <HintPath>..\..\mods\UnityEngine.dll</HintPath>
+    </Reference>
     <Reference Include="UnityEngine.AnimationModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null">
       <HintPath>bin/Release/UnityEngine.AnimationModule.dll</HintPath>
     </Reference>
@@ -95,6 +98,8 @@
     <Compile Include="Common\PathFinding\AStar.cs" />
     <Compile Include="Common\World.cs" />
     <Compile Include="Common\XMLHelpers\XMLUtils.cs" />
+    <Compile Include="Components\CustomEnemySpeed.cs" />
+    <Compile Include="Components\InfiniteEnemy.cs" />
     <Compile Include="Components\StateMachines\Rewrites\HornetBossHard.cs" />
     <Compile Include="Components\StateMachines\Rewrites\SuperDash.cs" />
     <Compile Include="Components\StateMachines\Rewrites\ADashEffect.cs" />
