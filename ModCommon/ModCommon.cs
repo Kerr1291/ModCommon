@@ -1,4 +1,5 @@
-﻿using System.IO;
+﻿using System;
+using System.IO;
 using Modding;
 using UnityEngine;
 using UnityEngine.SceneManagement;
@@ -11,7 +12,7 @@ namespace ModCommon
      * in install_build.bat to point to your hollow knight mods folder...
      * 
      */
-    public partial class ModCommon : Mod<ModCommonSaveSettings, ModCommonSettings>, ITogglableMod
+    public partial class ModCommon : Mod<VoidModSettings, ModCommonSettings>
     {
         public static ModCommon Instance { get; private set; }
 
@@ -74,14 +75,6 @@ namespace ModCommon
             SaveGlobalSettings();
         }
 
-        ///Revert all changes the mod has made
-        public void Unload()
-        {
-            UnRegisterCallbacks();
-            comms.DisableNode();
-            Instance = null;
-        }
-
         //TODO: update when version checker is fixed in new modding API version
         public override string GetVersion()
         {
@@ -102,13 +95,16 @@ namespace ModCommon
 
         void RegisterCallbacks()
         {
-            UnityEngine.SceneManagement.SceneManager.activeSceneChanged -= CheckAndDisableLogicInMenu;
-            UnityEngine.SceneManagement.SceneManager.activeSceneChanged += CheckAndDisableLogicInMenu;
-        }
+            try
+            {
+                UnityEngine.SceneManagement.SceneManager.activeSceneChanged -= CheckAndDisableLogicInMenu;
+            }
+            catch (Exception e)
+            {
+                LogWarn("Unable to remove old callbacks because: " + e + " This is probably not a bug.");
+            }
 
-        void UnRegisterCallbacks()
-        {
-            UnityEngine.SceneManagement.SceneManager.activeSceneChanged -= CheckAndDisableLogicInMenu;
+            UnityEngine.SceneManagement.SceneManager.activeSceneChanged += CheckAndDisableLogicInMenu;
         }
 
         void CheckAndDisableLogicInMenu( Scene from, Scene to )
