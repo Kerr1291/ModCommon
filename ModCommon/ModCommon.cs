@@ -34,10 +34,12 @@ namespace ModCommon
 
             SetupDefaulSettings();
 
-            UnRegisterCallbacks();
             RegisterCallbacks();
 
             DevLog.Logger.Hide();
+
+            // Setup and prepare the CanvasUtil fonts so that other mods can use them.
+            CanvasUtil.CreateFonts();
 
             Log( "Mod Common is done initializing!" );
         }
