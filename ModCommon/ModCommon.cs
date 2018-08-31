@@ -90,7 +90,7 @@ namespace ModCommon
         //Load the mod common first!
         public override int LoadPriority()
         {
-            return 0;
+            return -100;
         }
 
         void RegisterCallbacks()
