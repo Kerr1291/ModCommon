@@ -173,21 +173,17 @@ namespace ModCommon
                 }
             }
             
-            Modding.Logger.Log("got bool value: " + cast);
             return cast;
         }
 
         private static IEnumerator AddSpellHook()
         {
-            Logger.Log("die3");
             while (HeroController.instance == null || GameManager.instance == null)
             {
                 yield return null;
             }
-            Logger.Log("die4");
 
             PlayMakerFSM fsm = HeroController.instance.spellControl;
-            Logger.Log("die5");
             
             fsm.InsertMethod("Has Quake?", 0, () =>
             {
@@ -196,7 +192,6 @@ namespace ModCommon
                     fsm.Fsm.SetState("Inactive");
                 }
             });
-            Logger.Log("die6");
             
             fsm.InsertMethod("Has Scream?", 0, () =>
             {
