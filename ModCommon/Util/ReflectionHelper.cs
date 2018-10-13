@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Reflection;
+using System.Runtime.Remoting.Messaging;
 using MonoMod.Utils;
 
 namespace ModCommon.Util
@@ -58,7 +59,7 @@ namespace ModCommon.Util
             typeFields[name]?.SetValue(obj, val);
         }
         
-        private static readonly Dictionary<Type, Dictionary<string, MethodInfo>> MethodInfos =
+        private static readonly Dictionary<Type, Dictionary<string, MethodInfo>> METHOD_INFOS =
             new Dictionary<Type, Dictionary<string, MethodInfo>>();
 
         public static MethodInfo GetMethodInfo(object obj, string name, bool instance = true)
@@ -67,12 +68,12 @@ namespace ModCommon.Util
 
             Type t = obj.GetType();
 
-            if (!MethodInfos.ContainsKey(t))
+            if (!METHOD_INFOS.ContainsKey(t))
             {
-                MethodInfos.Add(t, new Dictionary<string, MethodInfo>());
+                METHOD_INFOS.Add(t, new Dictionary<string, MethodInfo>());
             }
 
-            Dictionary<string, MethodInfo> typeInfos = MethodInfos[t];
+            Dictionary<string, MethodInfo> typeInfos = METHOD_INFOS[t];
 
             if (!typeInfos.ContainsKey(name))
             {
@@ -85,9 +86,9 @@ namespace ModCommon.Util
             return typeInfos[name];
         }
 
-        public static void InvokeMethod(object obj, string name, bool instance = true, params object[] args)
+        public static T InvokeMethod<T>(object obj, string name, bool instance = true, params object[] args)
         {
-            obj.GetMethodInfo(name, instance).GetFastDelegate().Invoke(obj, args);
+            return (T) obj.GetMethodInfo(name, instance).GetFastDelegate().Invoke(obj, args);
         }
     }
 
@@ -102,7 +103,7 @@ namespace ModCommon.Util
         public static MethodInfo GetMethodInfo(this object obj, string name, bool instance = true) =>
             ReflectionHelper.GetMethodInfo(obj, name, instance);
         
-        public static void InvokeMethod(object obj, string name, bool instance = true, params object[] args) => 
-            ReflectionHelper.InvokeMethod(obj, name, instance, args);
+        public static object InvokeMethod<T>(this object obj, string name, bool instance = true, params object[] args) => 
+            ReflectionHelper.InvokeMethod<T>(obj, name, instance, args);
     }
 }
