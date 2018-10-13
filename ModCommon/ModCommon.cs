@@ -125,9 +125,7 @@ namespace ModCommon
 
         private static void SpellHook()
         {
-            Logger.Log("die1");
             GameManager.instance.StartCoroutine(AddSpellHook());
-            Logger.Log("die2");
         }
 
         public enum Spell
