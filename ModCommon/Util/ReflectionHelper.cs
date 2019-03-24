@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Reflection;
+using JetBrains.Annotations;
 using MonoMod.Utils;
 
 namespace ModCommon.Util
@@ -43,15 +44,27 @@ namespace ModCommon.Util
     
     public static class ReflectionExtensions
     {
+        [Obsolete("Use SetAttr<TObject, TField>")]
         public static void SetAttr<T>(this object obj, string name, T val, bool instance = true) =>
             Modding.ReflectionHelper.SetAttr(obj, name, val, instance);
 
+        [Obsolete("Use GetAttr<TType, TField>")]
         public static T GetAttr<T>(this object obj, string name, bool instance = true) =>
             Modding.ReflectionHelper.GetAttr<T>(obj, name, instance);
+        
+        [PublicAPI]
+        public static TField GetAttr<TObject, TField>(this TObject obj, string name) =>
+            Modding.ReflectionHelper.GetAttr<TObject, TField>(obj, name);
+        
+        [PublicAPI]
+        public static void SetAttr<TObject, TField>(this TObject obj, string name, TField val) =>
+            Modding.ReflectionHelper.SetAttr(obj, name, val);
 
+        [PublicAPI]
         public static MethodInfo GetMethodInfo(this object obj, string name, bool instance = true) =>
             ReflectionHelper.GetMethodInfo(obj, name, instance);
         
+        [PublicAPI]
         public static object InvokeMethod<T>(this object obj, string name, bool instance = true, params object[] args) => 
             ReflectionHelper.InvokeMethod<T>(obj, name, instance, args);
     }

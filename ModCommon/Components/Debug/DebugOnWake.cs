@@ -10,7 +10,7 @@ namespace ModCommon
     //TODO: move the wake components into their own classes....
     public class DebugOnWake : MonoBehaviour
     {
-        public new BoxCollider2D collider;
+        public BoxCollider2D collider;
         public GameObject owner;
 
         List<GameObject> lines;

@@ -114,7 +114,6 @@ namespace ModCommon
                 yield return currentState;
             }
 
-            yield break;
         }
 
         IEnumerator Out()
